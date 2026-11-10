@@ -1,15 +1,15 @@
 import { defineConfig } from "vite";
-import { TITLE, DESCRIPTION, headTags, robotsTxt, sitemapXml } from "./scripts/seo.mjs";
+import { TITLE, DESCRIPTION, headTags, robotsTxt, sitemapXml, staticContent, esc } from "./scripts/seo.mjs";
 
 // Head tags, JSON-LD, robots.txt and sitemap.xml come from src/data/site.js,
 // so the domain (BASE_URL) and profile links change in one place.
 const seo = () => ({
   name: "portfolio-seo",
   transformIndexHtml(html) {
-    return html
-      .replace(/<title>[^<]*<\/title>/, `<title>${TITLE}</title>`)
-      .replace(/<meta name="description" content="[^"]*">/, `<meta name="description" content="${DESCRIPTION}">`)
-      .replace("</head>", `${headTags()}\n</head>`);
+    return staticContent(html)
+      .replace(/<title>[^<]*<\/title>/, () => `<title>${esc(TITLE)}</title>`)
+      .replace(/<meta name="description" content="[^"]*">/, () => `<meta name="description" content="${esc(DESCRIPTION)}">`)
+      .replace("</head>", () => `${headTags()}\n</head>`);
   },
   generateBundle() {
     this.emitFile({ type: "asset", fileName: "robots.txt", source: robotsTxt() });

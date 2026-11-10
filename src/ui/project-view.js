@@ -14,6 +14,7 @@ export function initProjectView({ projects, graph, focus, lenis, reduced, tokens
   const view = $("#project-view"), title = $("#pv-title");
   const background = [$("main"), $("header.top"), $(".foot")];
   let current = null, opener = null, source = null, savedY = 0, pushed = false;
+  let gen = 0;   // bumps on every open/close, so a late callback from an earlier transition does nothing
 
   function fill(p) {
     title.textContent = p.t;
@@ -45,8 +46,8 @@ export function initProjectView({ projects, graph, focus, lenis, reduced, tokens
     if (canVT) {
       from.style.viewTransitionName = "project-title";
       const vt = document.startViewTransition(() => { from.style.viewTransitionName = ""; update(); to.style.viewTransitionName = "project-title"; });
-      vt.finished.finally(() => { to.style.viewTransitionName = ""; });
-      return vt.updateCallbackDone;
+      vt.finished.catch(() => {}).finally(() => { to.style.viewTransitionName = ""; });
+      return vt.updateCallbackDone.catch(() => {});
     }
     const a = shared ? from.getBoundingClientRect() : null;
     update();
@@ -63,7 +64,8 @@ export function initProjectView({ projects, graph, focus, lenis, reduced, tokens
     if (!current) { savedY = scrollY; opener = document.activeElement !== document.body ? document.activeElement : null; }
     current = id; source = from;
     fill(p);
-    transition(() => setOpen(true), from, title).then(() => title.focus({ preventScroll: true }));
+    const g = ++gen;
+    transition(() => setOpen(true), from, title).then(() => { if (g === gen) title.focus({ preventScroll: true }); });
     view.scrollTop = 0;
     focus.set("dialog", { ids: neighbourhood(graph, id), aimId: id });
     return true;
@@ -74,12 +76,15 @@ export function initProjectView({ projects, graph, focus, lenis, reduced, tokens
     const back = source && source.isConnected ? source : null;
     current = null;
     focus.release("dialog");
+    const g = ++gen;
     transition(() => {
       setOpen(false);
       // restore the reading position before the shared element lands
       if (lenis) lenis.scrollTo(savedY, { immediate: true, force: true }); else scrollTo(0, savedY);
     }, title, back).then(() => {
-      if (opener && opener.isConnected) opener.focus({ preventScroll: true });
+      if (g !== gen) return;   // a newer open() owns opener/source now
+      // deep links and graph picks have no opener: land on main instead of <body>
+      (opener && opener.isConnected ? opener : $("#main")).focus({ preventScroll: true });
       opener = null; source = null;
     });
   }
@@ -113,7 +118,8 @@ export function initProjectView({ projects, graph, focus, lenis, reduced, tokens
     else if (!id && current) close();
   });
   $("#pv-back").addEventListener("click", leave);
-  view.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); leave(); } });
+  // on document: focus can fall to <body> when the reader clicks empty space in the view
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && current) { e.preventDefault(); leave(); } });
 
   // deep link on first load: open without a transition
   const initial = routeId(location.hash);

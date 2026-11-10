@@ -8,7 +8,7 @@ export const DESCRIPTION =
   `${SITE.name}, B.Tech AI and Data Science student at ${SITE.university}: ` +
   `robust belief propagation research and ${PROJECTS.length} projects with code.`;
 
-const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+export const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
 const abs = (path) => new URL(path, BASE_URL.endsWith("/") ? BASE_URL : BASE_URL + "/").href;
 
 /** schema.org Person. Only facts from site.js; affiliation, not alumniOf (still studying). */
@@ -88,9 +88,10 @@ export function staticContent(html) {
     `<li><a class="btn${i ? " ghost" : ""}" data-magnetic href="${esc(l.href)}"${l.kind !== "email" ? ` aria-label="${esc(l.label)} profile"` : ""}>${esc(l.kind === "email" ? `Email ${l.label}` : l.label)}</a></li>`).join("");
   const projects = PROJECTS.map((p) =>
     `<li><a href="https://github.com/antonyjasfer/${esc(p.repo)}">${esc(p.t)}</a>: ${esc(p.d)}</li>`).join("");
+  // function replacers: a "$" in content must never be read as a replacement pattern
   return html
-    .replace('<p class="about-lede" id="about-lede"></p>', `<p class="about-lede" id="about-lede">${esc(ABOUT_LEDE)}</p>`)
-    .replace('<dl class="about-facts" id="about-facts"></dl>', `<dl class="about-facts" id="about-facts">${facts}</dl>`)
-    .replace('<ul class="contact-links" id="contact-links"></ul>', `<ul class="contact-links" id="contact-links">${links}</ul>`)
-    .replace('<div class="tour" id="tour">', `<noscript><ul class="noscript-projects">${projects}</ul></noscript>\n    <div class="tour" id="tour">`);
+    .replace('<p class="about-lede" id="about-lede"></p>', () => `<p class="about-lede" id="about-lede">${esc(ABOUT_LEDE)}</p>`)
+    .replace('<dl class="about-facts" id="about-facts"></dl>', () => `<dl class="about-facts" id="about-facts">${facts}</dl>`)
+    .replace('<ul class="contact-links" id="contact-links"></ul>', () => `<ul class="contact-links" id="contact-links">${links}</ul>`)
+    .replace('<div class="tour" id="tour">', () => `<noscript><ul class="noscript-projects">${projects}</ul></noscript>\n    <div class="tour" id="tour">`);
 }

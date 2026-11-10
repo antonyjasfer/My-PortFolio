@@ -14,7 +14,8 @@ async function open(browser, opts = {}) {
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto(URL, { waitUntil: "load" });
-  await page.waitForTimeout(2500);
+  await page.waitForFunction(() => document.documentElement.classList.contains("intro-done"), null, { timeout: 8000 });
+  await page.waitForTimeout(800);   // let the lazy graph attach
   return { page, errors };
 }
 const tourTop = (page) => page.evaluate(() => {
@@ -136,6 +137,30 @@ const activePanel = (page) => page.evaluate(() => [...document.querySelectorAll(
     await page.close();
   }
 
+  // 5d2. browser Back/Forward through project routes
+  {
+    const { page, errors } = await open(browser);
+    await page.evaluate(() => scrollTo(0, document.querySelector("#plist").getBoundingClientRect().top + scrollY - 200));
+    await page.click("#plist li:first-child button");
+    const shown = () => page.evaluate(() => !document.querySelector("#project-view").hidden);
+    await page.waitForFunction(() => !document.querySelector("#project-view").hidden);
+    await page.goBack();
+    await page.waitForFunction(() => document.querySelector("#project-view").hidden, null, { timeout: 3000 }).catch(() => {});
+    check("history: Back closes the project", !(await shown()));
+    await page.goForward();
+    await page.waitForFunction(() => !document.querySelector("#project-view").hidden, null, { timeout: 3000 }).catch(() => {});
+    check("history: Forward reopens it", await shown());
+    await page.evaluate(() => { location.hash = "#/project/nexus"; });
+    await page.waitForFunction(() => document.querySelector("#pv-title").textContent === "NEXUS", null, { timeout: 3000 }).catch(() => {});
+    check("history: changing the hash switches project", (await page.textContent("#pv-title")) === "NEXUS");
+    await page.mouse.click(5, 5);   // focus falls to <body>
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(500);
+    check("history: Esc still closes after clicking empty space", !(await shown()));
+    check("history: no console errors", errors.length === 0, errors.join(" | "));
+    await page.close();
+  }
+
   // 5e. idle rendering must not stall scrolling: after the graph goes idle, a scroll still drives the tour
   {
     const { page } = await open(browser);
@@ -184,8 +209,9 @@ const activePanel = (page) => page.evaluate(() => [...document.querySelectorAll(
   // 7. WebGL context lost (review focus 5): fallback SVG replaces the canvas
   {
     const { page, errors } = await open(browser);
+    await page.waitForFunction(() => window.__graph, null, { timeout: 8000 });
     await page.evaluate(() => window.__graph.loseContext());
-    await page.waitForTimeout(600);
+    await page.waitForFunction(() => document.documentElement.classList.contains("nogl"), null, { timeout: 5000 }).catch(() => {});
     const s = await page.evaluate(() => ({ nogl: document.documentElement.classList.contains("nogl"), fb: !document.querySelector("#graph-fallback").hidden }));
     check("context loss swaps in the fallback SVG", s.nogl && s.fb);
     check("context loss: no console errors", errors.length === 0, errors.join(" | "));
@@ -202,6 +228,10 @@ const activePanel = (page) => page.evaluate(() => [...document.querySelectorAll(
     const { page, errors } = await open(ctx);
     const fb = await page.evaluate(() => !document.querySelector("#graph-fallback").hidden);
     check("no-WebGL browser shows the fallback SVG", fb);
+    await page.evaluate(() => scrollTo(0, document.querySelector("#plist").getBoundingClientRect().top + scrollY - 200));
+    await page.click("#plist li:first-child button");
+    await page.waitForFunction(() => !document.querySelector("#project-view").hidden, null, { timeout: 3000 }).catch(() => {});
+    check("no-WebGL: projects still open", await page.evaluate(() => !document.querySelector("#project-view").hidden));
     check("no-WebGL: no console errors", errors.length === 0, errors.join(" | "));
     await b2.close();
   }
