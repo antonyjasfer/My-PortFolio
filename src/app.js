@@ -16,6 +16,9 @@ import { initTour } from "./motion/tour.js";
 import { initSectionFocus, initWipes } from "./motion/sections.js";
 import { initMagnetic, initCursor } from "./motion/pointer.js";
 import { initProjectsList } from "./ui/projects-list.js";
+import { initProjectView } from "./ui/project-view.js";
+import { initAbout } from "./ui/about.js";
+import { initContact } from "./ui/contact.js";
 import { initPath } from "./ui/path.js";
 import { initExplorable } from "./research/explorable.js";
 
@@ -81,15 +84,21 @@ await yieldTask();
 
 // ---- below-the-fold content ----
 renderTourPanels(FEATURED);
-initPath(PATH);
+const view = initProjectView({ projects: PROJECTS, graph, focus, lenis, reduced, tokens });
+const list = initProjectsList({ projects: PROJECTS, graph, focus, openProject: (id, from) => view.show(id, from), isOpen: view.isOpen });
 const explorable = initExplorable($("#rx"), { reduced, tokens });
-const list = initProjectsList({ projects: PROJECTS, graph, focus });
 await yieldTask();
 
+// ScrollTriggers must be created in page order: the tour's pin adds six
+// viewports of spacing, and triggers below it are measured after it.
 const sections = initSectionFocus({ graph, focus, wide });
 // Pinning needs room: short or very narrow viewports (and 400% zoom) get the static list.
 const roomy = innerHeight >= 560 && innerWidth >= 320;
 const tour = initTour({ section: $("#work"), steps: FEATURED, graph, focus, getScene, tokens, reduced: reduced || !roomy, wide });
+await yieldTask();
+initAbout({ reduced, tokens });
+initPath(PATH, { reduced });
+initContact({ getScene, reduced });
 initWipes({ reduced });
 const offMagnet = initMagnetic("[data-magnetic]", { tokens, reduced });
 const offCursor = initCursor({ tokens, reduced });
@@ -106,7 +115,7 @@ sceneModule
     focus.refresh();
     intro.attachScene(s);
     tour.trigger?.update(); // if the user is parked mid-tour, show the tour camera now
-    s.onPick((hit) => (hit.kind === "p" ? list.open(hit.id) : list.selectChip(hit.label)));
+    s.onPick((hit) => (hit.kind === "p" ? view.show(hit.id) : list.selectChip(hit.label)));
   })
   .catch((err) => useFallback(err));
 
@@ -143,6 +152,7 @@ function renderTourPanels(steps) {
     li.querySelector(".desc").textContent = p.d;
     li.querySelector(".status").textContent = p.s;
     const links = li.querySelector(".links");
+    const more = document.createElement("a"); more.href = `#/project/${p.id}`; more.dataset.projectLink = p.id; more.textContent = `More about ${p.t}`; links.appendChild(more);
     const a = document.createElement("a"); a.href = repoUrl(p); a.textContent = `${p.t} on GitHub`; links.appendChild(a);
     if (p.live) { const b = document.createElement("a"); b.href = p.live; b.textContent = "Live site"; b.setAttribute("aria-label", `${p.t} live site`); links.appendChild(b); }
     ol.appendChild(li);

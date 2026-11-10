@@ -36,6 +36,10 @@ test("no achievement language without README backing", () => {
   }
 });
 
-test("path entries are [when, what, detail]", () => {
-  for (const e of PATH) assert.equal(e.length, 3);
+test("path entries are [when, what, detail, projectIds] and every id is a real project", () => {
+  const ids = new Set(PROJECTS.map((p) => p.id));
+  for (const e of PATH) {
+    assert.equal(e.length, 4);
+    assert.ok(e[3].length > 0 && e[3].every((id) => ids.has(id)), e[1]);
+  }
 });

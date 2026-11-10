@@ -40,6 +40,7 @@ export function initTour({ section, steps, graph, focus, getScene, tokens, reduc
   }
 
   const shift = () => (wide() ? [-3.2, 0] : [0, 2.6]);
+  const leave = () => { getScene().setTour(null); focus.release("tour"); focusKey = ""; };
   const tl = gsap.timeline({ defaults: { ease: tokens.ease.out } });
   // panels: all start offstage except the first
   gsap.set(panels.slice(1), { xPercent: 30, opacity: 0 });
@@ -60,13 +61,16 @@ export function initTour({ section, steps, graph, focus, getScene, tokens, reduc
     onUpdate(self) {
       const p = self.progress * n, i = Math.min(n - 1, Math.floor(p)), local = p - i;
       setActive(i);
+      // A jump straight past the tour updates progress without ever toggling it
+      // on, so only drive the camera while the pin is actually active.
+      if (!self.isActive) { leave(); return; }
       const from = i === 0 ? steps[0].id : steps[i - 1].id, to = steps[i].id;
       getScene().setTour(from, to, i === 0 ? 1 : Math.min(1, local / CHOREO.travel));
       const sh = shift(), key = to + sh.join();
       if (key !== focusKey) { focusKey = key; focus.set("tour", { ids: neighbourhood(graph, to), shift: sh }); }
     },
     onToggle(self) {
-      if (!self.isActive) { getScene().setTour(null); focus.release("tour"); focusKey = ""; }
+      if (!self.isActive) leave();
     },
   });
 

@@ -101,6 +101,10 @@ export function createCore({ canvas, reduced, signals, emit }) {
   P.mesh.count = tier.particles;
   world.add(P.mesh, P.courier);
 
+  // The closing motion gathers every message on the best-connected node.
+  const gatherNode = nodes.reduce((best, n) => (graph.adj[n.id].length > graph.adj[best.id].length ? n : best), nodes[0]);
+  let settle = 0;
+
   // ---- state ----
   let assembly = reduced ? 1 : 0, speed = reduced ? 0.3 : 0, edgeK = edgeProgress(assembly);
   let focus = null, hover = null, dirty = true, paused = false, dead = false, disposed = false;
@@ -128,7 +132,7 @@ export function createCore({ canvas, reduced, signals, emit }) {
 
   const posOf = (id) => cur[id];
   const visOf = (ei) => (edgeK >= 1 && Math.min(byId[edges[ei][0]].op, byId[edges[ei][1]].op) > 0.5 ? 1 : 0);
-  const showLabel = (n) => n.kind === "p" || hover === n || (tier.skillLabels && focus && focus.has(n.id) && focus.size < 12);
+  const showLabel = (n) => n.kind === "p" || hover === n || (n === gatherNode && settle > 0.5) || (tier.skillLabels && focus && focus.has(n.id) && focus.size < 12);
 
   function writeLabels() {
     const { w, h } = size;
@@ -202,6 +206,15 @@ export function createCore({ canvas, reduced, signals, emit }) {
       dirty = true;
     },
     setShift(x, y) { rig.state.shiftXT = x; rig.state.shiftYT = y; dirty = true; },
+    /** 0..1: messages slow down and gather on one node (the contact section's closing motion) */
+    setSettle(k) {
+      settle = Math.max(0, Math.min(1, k));
+      if (!tour) {
+        rig.aimAt(settle > 0.3 ? gatherNode.p : null, 0.08);
+        rig.state.zoomT = 1 - 0.22 * settle;   // ease in on the node the messages gather on
+      }
+      hoverDirty = true; dirty = true;
+    },
     resize(w, h, dpr) {
       size = { w, h, dpr };
       renderer.setPixelRatio(Math.min(dpr, tier.maxDpr));
@@ -246,8 +259,10 @@ export function createCore({ canvas, reduced, signals, emit }) {
       let settling = false, changed = hoverDirty;
       hoverDirty = false;
       for (const n of nodes) {
-        const op = n.op + (n.target - n.op) * (reduced ? 1 : 1 - Math.pow(0.88, dt * 60));
-        if (Math.abs(n.target - op) > 1e-3) settling = true;
+        // while settling, everything but the gathering node fades toward the paper
+        const target = n === gatherNode ? Math.max(n.target, settle) : n.target * (1 - 0.8 * settle);
+        const op = n.op + (target - n.op) * (reduced ? 1 : 1 - Math.pow(0.88, dt * 60));
+        if (Math.abs(target - op) > 1e-3) settling = true;
         if (op !== n.op) { n.op = op; tintNode(n); changed = true; }
         const s = hover === n ? 1.3 : 1, sc = n.scale + (s - n.scale) * (reduced ? 1 : 0.2);
         if (Math.abs(sc - n.scale) > 1e-4) { n.scale = sc; writeNode(n); changed = true; settling = true; }
@@ -258,17 +273,17 @@ export function createCore({ canvas, reduced, signals, emit }) {
       }
       // edge colour follows node opacity, so it only needs rewriting while opacities move
       if (settling || edgeColDirty) { edgeColDirty = settling; colourEdges(); }
-      P.update(reduced ? 0 : dt, speed, posOf, visOf);
+      P.update(reduced ? 0 : dt, speed * (1 - 0.85 * settle), posOf, visOf, settle > 0 ? cur[gatherNode.id] : null, settle);
       if (P.halo.material.opacity > 0) P.halo.lookAt(camera.position);
       renderer.render(scene, camera);
       writeLabels();
-      busy = settling || rig.busy() || (tour !== null && tourMoving);
+      busy = settling || rig.busy() || (tour !== null && tourMoving) || (settle > 0 && settle < 1);
       tourMoving = false;
       if (reduced && (settling || rig.settling())) dirty = true;
       return true;
     },
     labels: () => labelBuf,
-    state: () => ({ busy: busy || dirty || assembly < 1 || rig.state.dragging, assembled: assembly >= 1, tier: tierName, idleFps: tier.idleFps }),
+    state: () => ({ busy: busy || dirty || assembly < 1 || rig.state.dragging, assembled: assembly >= 1, tier: tierName, idleFps: tier.idleFps, settle, zoom: +rig.state.zoom.toFixed(3), paused }),
     /** e: {type, x, y, pointerType} in CSS pixels relative to the canvas */
     pointer(e) {
       if (e.type === "down") { rig.state.dragging = true; moved = 0; sx = e.x; sy = e.y; return; }

@@ -24,7 +24,7 @@ export function createRig(camera, world, { reduced }) {
 
   function update(dt, snap = false) {
     // per-frame rates from v1, normalised to 60fps so 120Hz screens match
-    const fr = Math.min(dt * 60, 3), ease = (k) => (snap ? 1 : 1 - Math.pow(1 - k, fr));
+    const fr = Math.min(dt * 60, 6), ease = (k) => (snap ? 1 : 1 - Math.pow(1 - k, fr));
     if (aiming && !s.dragging) {
       const ty = -Math.atan2(aim.x, aim.z), tx = clampX(Math.atan2(aim.y, Math.hypot(aim.x, aim.z)));
       let d = ty - s.rotY; d = Math.atan2(Math.sin(d), Math.cos(d));

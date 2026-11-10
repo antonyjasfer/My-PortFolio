@@ -7,8 +7,20 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
  */
 export function initSmoothScroll({ reduced }) {
   if (reduced) return null;
-  const lenis = new Lenis({ autoRaf: false, anchors: { offset: -72 }, lerp: 0.11 });
+  const lenis = new Lenis({ autoRaf: false, lerp: 0.11 });
   lenis.on("scroll", ScrollTrigger.update);
+  // In-page section links scroll smoothly. Project routes (#/...) are left to the router.
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest?.('a[href^="#"]');
+    if (!a) return;
+    const href = a.getAttribute("href");
+    if (href.startsWith("#/") || href === "#") return;
+    const target = document.getElementById(href.slice(1));
+    if (!target) return;
+    e.preventDefault();
+    lenis.scrollTo(target, { offset: href === "#main" ? 0 : -72 });
+    if (href === "#main") target.focus?.({ preventScroll: true });
+  });
   return lenis;
 }
 

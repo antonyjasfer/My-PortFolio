@@ -34,7 +34,7 @@
   </nav>
 </header>
 
-<main id="main">
+<main id="main" tabindex="-1">
   <section id="top" class="hero-section" data-focus="all" aria-labelledby="hero-title">
     <div class="hero">
       <h1 id="hero-title" class="hero-title"><span>Antony</span> <span>Selva Jasfer</span></h1>
@@ -122,44 +122,59 @@
   </section>
 
   <section id="about" data-focus="all" aria-labelledby="about-title">
-    <div class="panel wipe">
-      <h2 id="about-title">About</h2>
-      <p class="intro">I'm a B.Tech student in Artificial Intelligence and Data Science at Amrita Vishwa Vidyapeetham. Most of what I build starts at a hackathon and keeps going if the idea holds up.</p>
-      <p class="small placeholder-note">A longer introduction is coming in the next update.</p>
+    <div class="about wipe">
+      <figure class="portrait" id="portrait">
+        <span class="portrait-plate" aria-hidden="true"></span>
+        <picture class="portrait-photo">
+          <source type="image/webp" srcset="/me-400.webp 400w, /me-720.webp 720w" sizes="(max-width: 860px) 60vw, 300px">
+          <img src="/me.jpg" width="720" height="720" alt="Antony Selva Jasfer" loading="lazy" decoding="async">
+        </picture>
+        <span class="portrait-dot" aria-hidden="true"></span>
+      </figure>
+      <div class="about-text">
+        <h2 id="about-title">About</h2>
+        <p class="about-lede" id="about-lede"></p>
+        <dl class="about-facts" id="about-facts"></dl>
+      </div>
     </div>
   </section>
 
   <section id="path" data-focus="projects" aria-labelledby="path-title">
-    <div class="panel wipe">
-      <h2 id="path-title">Path</h2>
-      <p class="intro">What I've been building, newest first.</p>
-      <ol class="path" id="pathlist"></ol>
+    <div class="timeline-wrap">
+      <div class="section-head">
+        <h2 id="path-title">Path</h2>
+        <p class="intro">What I've built, newest first.</p>
+      </div>
+      <div class="timeline" id="timeline">
+        <span class="timeline-line" aria-hidden="true"><span class="timeline-fill"></span></span>
+        <ol class="path" id="pathlist"></ol>
+      </div>
     </div>
   </section>
 
   <section id="contact" data-focus="all" aria-labelledby="contact-title">
-    <div class="panel wipe">
-      <h2 id="contact-title">Let's build something checkable</h2>
-      <p class="intro">I'm looking for internships and research collaborations in trustworthy AI, agents and applied ML. Hackathon teams welcome too.</p>
-      <div class="cta">
-        <a class="btn" data-magnetic href="https://github.com/antonyjasfer">GitHub</a>
-        <!-- LINKEDIN: add <a class="btn ghost" data-magnetic href="YOUR_LINKEDIN_URL">LinkedIn</a> -->
-      </div>
+    <div class="contact wipe">
+      <h2 id="contact-title">Let's build something you can check</h2>
+      <p class="intro">I'm looking for internships and research collaborations in trustworthy AI, agents and applied ML. Hackathon teams are welcome too.</p>
+      <ul class="contact-links" id="contact-links"></ul>
     </div>
   </section>
 </main>
 
 <footer class="foot">Built with Three.js and GSAP. The graph is drawn live in your browser.</footer>
 
-<aside id="detail" role="dialog" aria-modal="false" aria-labelledby="dTitle" hidden>
-  <button class="x" id="dClose" type="button" aria-label="Close project">×</button>
-  <h3 id="dTitle"></h3>
-  <p class="where" id="dWhere"></p>
-  <p id="dDesc"></p>
-  <p class="status" id="dStatus"></p>
-  <div class="stack" id="dStack"></div>
-  <div class="links" id="dLinks"></div>
-</aside>
+<div class="project-view" id="project-view" role="dialog" aria-modal="true" aria-labelledby="pv-title" hidden>
+  <article class="pv-inner">
+    <button class="pv-back" id="pv-back" type="button">Back to the projects</button>
+    <h1 class="pv-title" id="pv-title" tabindex="-1"></h1>
+    <p class="pv-where" id="pv-where"></p>
+    <p class="pv-desc" id="pv-desc"></p>
+    <p class="pv-status" id="pv-status"></p>
+    <h2 class="pv-sub">Built with</h2>
+    <ul class="pv-skills" id="pv-skills"></ul>
+    <p class="pv-links" id="pv-links"></p>
+  </article>
+</div>
 
 <script type="module" src="/src/main.js"></script>
 </body>

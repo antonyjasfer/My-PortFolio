@@ -136,6 +136,7 @@ export function createSceneHost({ canvas, labels: labelBox, tip, graph, reduced 
     setSpeed: (k) => call("setSpeed", k),
     setTour: (from, to, t) => call("setTour", from ?? null, to, t),
     setShift: (x, y) => call("setShift", x, y),
+    setSettle: (k) => call("setSettle", k),
     resize: () => call("resize", innerWidth, innerHeight, devicePixelRatio || 1),
     invalidate: () => call("invalidate"),
     /** One frame request at a time: dt accumulates while the core is still drawing. */
