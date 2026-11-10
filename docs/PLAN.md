@@ -293,3 +293,19 @@ setPaused(bool) · onPick(cb) · dispose()
 3. The watchdog must not step down during the intro assembly or a tab switch (the dt clamp keeps long frames out of the average; unit test).
 4. Idle throttling must not stall Lenis: a scroll event wakes full rate on the same frame (e2e scrolls during idle and checks the tour updates).
 5. TODO contact values must never render as a broken `href` (unit test on `site.js` helpers).
+
+## Status after Prompt 2 (2026-11-10)
+
+| Lighthouse, lab (median of 3) | Before (Prompt 1) | After |
+|---|---|---|
+| Mobile Performance | 74 | 98 |
+| Mobile TBT | 1,190 ms | 20 ms |
+| Mobile LCP | 2.3 s | 2.2 s |
+| Mobile Accessibility / Best Practices / SEO | 100 / 100 / 100 | 100 / 100 / 100 |
+| Desktop Performance / A11y / BP / SEO | 96 / 100 / 100 / 100 | 100 / 100 / 100 / 100 |
+
+The win came from moving the graph into a Web Worker (OffscreenCanvas): context creation, shader linking and rendering no longer run on the main thread. The lab uses software GL, so the low quality tier is picked there; real phones usually get medium.
+
+- Tests: 38 unit tests, 42 e2e checks, axe-core 0 violations at 375/768/1440 px and with reduced motion, 0 console errors.
+- Still TODO in `src/data/site.js`: LinkedIn URL, email address, whether to show the email. `BASE_URL` is a placeholder for Prompt 3.
+- Browsers with OffscreenCanvas but no WebGL in workers (Safari 16.4 to 16.x) see the static SVG graph instead of the live one.
