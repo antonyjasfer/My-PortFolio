@@ -49,11 +49,20 @@ export function createRig(camera, world, { reduced }) {
   }
   function release() { if (IDLE && Math.abs(s.vY) < IDLE) s.vY = IDLE; }
 
+  /** true when shift, zoom or an aim is still converging (idle drift does not count) */
+  function busy() {
+    if (Math.abs(s.shiftXT - s.shiftX) > 1e-3 || Math.abs(s.shiftYT - s.shiftY) > 1e-3 || Math.abs(s.zoomT - s.zoom) > 1e-3) return true;
+    if (!aiming) return false;
+    const ty = -Math.atan2(aim.x, aim.z), tx = clampX(Math.atan2(aim.y, Math.hypot(aim.x, aim.z)));
+    let d = ty - s.rotY; d = Math.atan2(Math.sin(d), Math.cos(d));
+    return Math.abs(d) > 2e-3 || Math.abs(tx - s.rotX) > 2e-3;
+  }
+
   /** true when the rig is still moving towards its targets */
   function settling() {
     return Math.abs(s.shiftXT - s.shiftX) > 1e-3 || Math.abs(s.shiftYT - s.shiftY) > 1e-3 ||
       Math.abs(s.zoomT - s.zoom) > 1e-3 || aiming || Math.abs(s.vY) > 1e-5;
   }
 
-  return { state: s, aimAt, update, drag, release, settling };
+  return { state: s, aimAt, update, drag, release, settling, busy };
 }

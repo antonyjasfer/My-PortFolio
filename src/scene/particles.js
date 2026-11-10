@@ -25,7 +25,7 @@ export function createParticles(graph, count, color) {
   );
   const halo = new THREE.Mesh(
     new THREE.RingGeometry(0.24, 0.3, 32),
-    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false }),
+    new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0, depthWrite: false }),
   );
   courier.add(halo);
 
@@ -36,7 +36,7 @@ export function createParticles(graph, count, color) {
    * @param visOf (edgeIndex) => 0..1 visibility (focus * edge drawn)
    */
   function update(dt, speed, posOf, visOf) {
-    for (let i = 0; i < msgs.length; i++) {
+    for (let i = 0; i < mesh.count; i++) {  // only the instances the tier draws
       const m = msgs[i];
       m.t += dt * m.sp * speed;
       if (m.t >= 1) {

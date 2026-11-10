@@ -7,6 +7,7 @@ import { PROJECTS, FEATURED, repoUrl } from "./data/projects.js";
 import { PATH } from "./data/path.js";
 import { buildGraph } from "./scene/graph.js";
 import { createNullScene } from "./scene/null-scene.js";
+import { createWatchdog } from "./scene/quality.js";
 import { createFocus } from "./state/focus.js";
 import { readTokens } from "./motion/tokens.js";
 import { initSmoothScroll } from "./motion/lenis.js";
@@ -25,7 +26,6 @@ const $ = (s) => document.querySelector(s);
 const yieldTask = () => new Promise((r) => setTimeout(r, 0));
 const mqReduced = matchMedia("(prefers-reduced-motion: reduce)");
 const reduced = mqReduced.matches;
-const mobile = matchMedia("(max-width: 860px), (pointer: coarse)").matches;
 const wide = () => innerWidth > 860;
 
 // The three.js chunk loads once the page has loaded and the main thread is
@@ -34,7 +34,7 @@ const whenIdle = () => new Promise((resolve) => {
   const go = () => ("requestIdleCallback" in window ? requestIdleCallback(() => resolve(), { timeout: 1200 }) : setTimeout(resolve, 300));
   if (document.readyState === "complete") go(); else addEventListener("load", go, { once: true });
 });
-const sceneModule = whenIdle().then(() => import("./scene/scene.js"));
+const sceneModule = whenIdle().then(() => import("./scene/host.js"));
 sceneModule.catch(() => {}); // handled below; this only stops an unhandled-rejection report during boot
 
 const graph = buildGraph(PROJECTS);
@@ -52,10 +52,28 @@ const focus = createFocus((v) => {
 const intro = playIntro({ hero: $("#top"), tokens, reduced });
 const lenis = initSmoothScroll({ reduced });
 gsap.ticker.lagSmoothing(0);
+
+// Render on demand. Full rate while anything moves (scroll, input, assembly,
+// focus changes, tour); otherwise the graph's ambient drift runs at the tier's
+// idle frame rate. Input wakes it on the same frame.
+let lastInput = 0, idleAcc = 0;
+const wake = () => { lastInput = performance.now(); };
+for (const t of ["pointermove", "pointerdown", "wheel", "touchstart", "keydown"]) addEventListener(t, wake, { passive: true });
+// One-way quality watchdog: sustained slow full-rate frames step the scene down a tier.
+const watchdog = createWatchdog({ budgetMs: 22, windowMs: 2000, onStepDown: () => scene.stepDown() });
+
 gsap.ticker.add((time, deltaMs) => {
   lenis?.raf(time * 1000);
-  // clamp dt so a long frame (or a returning background tab) never jumps the graph
-  scene.render(Math.min((deltaMs || 16.7) / 1000, 0.05));
+  const dt = Math.min((deltaMs || 16.7) / 1000, 0.05); // clamp: a returning tab never jumps the graph
+  const active = scene.needsFrame() || Math.abs(lenis?.velocity ?? 0) > 0.01 || performance.now() - lastInput < 600;
+  if (active || reduced) {
+    scene.render(Math.min(dt + idleAcc, 0.1));
+    idleAcc = 0;
+    if (active && !reduced && scene.assembled) watchdog.feed(deltaMs);
+  } else if (scene.idleFps > 0) {
+    idleAcc += dt;
+    if (idleAcc >= 1 / scene.idleFps) { scene.render(Math.min(idleAcc, 0.1)); idleAcc = 0; }
+  }
 });
 
 await yieldTask();
@@ -78,20 +96,16 @@ const offCursor = initCursor({ tokens, reduced });
 // ---- scene ----
 let pending = null; // a scene that exists but is not attached yet
 sceneModule
-  .then(async ({ createScene }) => {
-    const s = pending = createScene({
-      canvas: $("#graph"), labels: $("#labels"), tip: $("#tip"), graph, reduced,
-      particles: mobile ? 40 : 150, maxDpr: mobile ? 1.5 : 2, antialias: !mobile, skillLabels: !mobile,
-    });
-    await yieldTask();
-    s.warm(); // shaders compile in this task; the first frame then only draws
-    await yieldTask();
+  .then(async ({ createSceneHost }) => {
+    // The graph renders in a worker when the browser allows it (see scene/host.js).
+    const s = pending = createSceneHost({ canvas: $("#graph"), labels: $("#labels"), tip: $("#tip"), graph, reduced });
+    s.onLost(() => useFallback("context lost"));
+    await s.ready; // shaders compiled, one program per task
     scene = s; pending = null;
     focus.refresh();
     intro.attachScene(s);
     tour.trigger?.update(); // if the user is parked mid-tour, show the tour camera now
     s.onPick((hit) => (hit.kind === "p" ? list.open(hit.id) : list.selectChip(hit.label)));
-    s.onLost(() => useFallback("context lost"));
   })
   .catch((err) => useFallback(err));
 
@@ -135,7 +149,7 @@ function renderTourPanels(steps) {
 }
 
 // Dev-only handle for debugging and the e2e script (stripped from production builds).
-if (import.meta.env.DEV) window.__portfolio = { getScene, focus, lenis };
+if (import.meta.env.DEV) window.__portfolio = { getScene, focus, lenis, watchdog };
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {

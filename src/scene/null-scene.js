@@ -5,8 +5,10 @@ export function createNullScene() {
   const noop = () => {};
   return {
     isNull: true,
+    ready: Promise.resolve(),
     setFocus: noop, setAssembly: noop, setSpeed: noop, setTour: noop, setShift: noop,
-    resize: noop, render: noop, invalidate: noop, warm: noop,
+    resize: noop, render: noop, invalidate: noop, warmSteps: () => [], stepDown: () => false,
+    needsFrame: () => false, idleFps: 0, tier: "none", assembled: true,
     onPick: () => noop, onLost: () => noop, dispose: noop,
   };
 }

@@ -3,7 +3,7 @@
 // package dependency). Run against a preview build:
 //   npm run build && npx vite preview --port 4173 &  node scripts/e2e.cjs
 const { chromium } = require("playwright");
-const URL = process.env.E2E_URL || "http://127.0.0.1:4173/";
+const URL = process.env.E2E_URL || "http://127.0.0.1:4173/?e2e";
 const GL = ["--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader"];
 let failed = 0;
 const check = (name, ok, extra = "") => { console.log(`${ok ? "pass" : "FAIL"}  ${name}${extra ? "  (" + extra + ")" : ""}`); if (!ok) failed++; };
@@ -96,7 +96,7 @@ const activePanel = (page) => page.evaluate(() => [...document.querySelectorAll(
   // 7. WebGL context lost (review focus 5): fallback SVG replaces the canvas
   {
     const { page, errors } = await open(browser);
-    await page.evaluate(() => document.querySelector("#graph").getContext("webgl2")?.getExtension("WEBGL_lose_context")?.loseContext());
+    await page.evaluate(() => window.__graph.loseContext());
     await page.waitForTimeout(600);
     const s = await page.evaluate(() => ({ nogl: document.documentElement.classList.contains("nogl"), fb: !document.querySelector("#graph-fallback").hidden }));
     check("context loss swaps in the fallback SVG", s.nogl && s.fb);
@@ -106,8 +106,12 @@ const activePanel = (page) => page.evaluate(() => [...document.querySelectorAll(
 
   // 8. no WebGL at all: fallback shows, page works
   {
+    // --disable-webgl only affects documents, not workers, so also remove
+    // OffscreenCanvas transfer: the page then takes its main-thread path.
     const b2 = await chromium.launch({ args: ["--disable-webgl", "--disable-3d-apis"] });
-    const { page, errors } = await open(b2);
+    const ctx = await b2.newContext();
+    await ctx.addInitScript(() => { delete HTMLCanvasElement.prototype.transferControlToOffscreen; });
+    const { page, errors } = await open(ctx);
     const fb = await page.evaluate(() => !document.querySelector("#graph-fallback").hidden);
     check("no-WebGL browser shows the fallback SVG", fb);
     check("no-WebGL: no console errors", errors.length === 0, errors.join(" | "));
