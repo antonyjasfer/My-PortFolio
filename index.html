@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Antony Selva Jasfer: AI systems that show their evidence</title>
+<meta name="description" content="Portfolio of A. Antony Selva Jasfer, B.Tech Artificial Intelligence and Data Science student at Amrita Vishwa Vidyapeetham. Research, hackathon builds and open source.">
+<meta name="theme-color" content="#EEF1F5">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2712%27 fill=%27%2316213E%27/%3E%3Ccircle cx=%2724%27 cy=%278%27 r=%275%27 fill=%27%23E8A317%27/%3E%3C/svg%3E">
+<link rel="preload" href="/fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  // Mark JS + motion state before first paint so the intro can hide what it will reveal.
+  (function (d) {
+    d.classList.add("js");
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) d.classList.add("motion");
+  })(document.documentElement);
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<canvas id="graph" aria-hidden="true"></canvas>
+<img id="graph-fallback" src="/graph-fallback.svg" alt="" hidden>
+<div id="labels" aria-hidden="true"></div>
+<div id="tip" aria-hidden="true"></div>
+
+<header class="top">
+  <a class="mark" href="#top" data-magnetic>Antony</a>
+  <nav class="top-nav" aria-label="Sections">
+    <a href="#work" data-magnetic>Work</a>
+    <a href="#research" data-magnetic>Research</a>
+    <a href="#path" class="hide-s" data-magnetic>Path</a>
+    <a href="#contact" data-magnetic>Contact</a>
+  </nav>
+</header>
+
+<main id="main">
+  <section id="top" class="hero-section" data-focus="all" aria-labelledby="hero-title">
+    <div class="hero">
+      <h1 id="hero-title" class="hero-title"><span>Antony</span> <span>Selva Jasfer</span></h1>
+      <p class="lede">I build AI systems that show their evidence before they ask to be trusted.</p>
+      <p class="meta">B.Tech Artificial Intelligence and Data Science at Amrita Vishwa Vidyapeetham, Nagercoil. Probabilistic models, agents, and a lot of hackathons.</p>
+      <p class="hint"><i aria-hidden="true"></i>The graph behind this text is my work: dark nodes are projects, light ones are the tools they use.</p>
+    </div>
+  </section>
+
+  <section id="work" data-focus="projects" aria-labelledby="work-title">
+    <div class="section-head wipe">
+      <h2 id="work-title">Work</h2>
+      <p class="intro">Six builds, in the order the graph connects them. Scroll and the camera follows the skills they share.</p>
+    </div>
+    <div class="tour" id="tour">
+      <ol class="tour-panels" id="tour-panels"></ol>
+      <p class="tour-count" id="tour-count" aria-hidden="true"></p>
+    </div>
+    <div class="panel all-projects wipe">
+      <h3 class="list-title">Everything, by skill</h3>
+      <p class="intro">Pick a skill to see where I've used it.</p>
+      <div class="chips" role="group" aria-label="Filter projects by skill" id="chips"></div>
+      <ul class="plist" id="plist"></ul>
+    </div>
+  </section>
+
+  <section id="research" data-focus="bp" aria-labelledby="research-title">
+    <div class="panel wipe">
+      <h2 id="research-title">Research</h2>
+      <h3>Budget-Coupled Robust Belief Propagation for Visual Hallucination Detection</h3>
+      <p class="intro">When a vision-language model says "there is a dog in this image", how sure should we be? I model the claim and its visual evidence as a tree-structured graphical model, run exact belief propagation, and let an adversary spend a limited budget corrupting the evidence. The result is a probability interval, not a single score.</p>
+      <div class="demo" id="demo">
+        <svg viewBox="0 0 320 150" aria-hidden="true" id="tree"></svg>
+        <label for="eps">Adversary budget: <output id="epsOut" for="eps">0.05</output></label>
+        <input id="eps" type="range" min="0" max="0.25" step="0.01" value="0.05">
+        <div class="toggle"><input type="checkbox" id="couple" checked><label for="couple">Share one budget across the whole tree</label></div>
+        <div class="interval" aria-hidden="true"><div class="half"></div><div class="band" id="band"></div></div>
+        <p class="verdict" id="verdict" aria-live="polite"></p>
+        <p class="small">A toy illustration of the idea with made-up numbers, not results from the paper. The red half means "below 50%".</p>
+      </div>
+      <ul class="facts">
+        <li>Inference engine with exact belief propagation, brute-force verification and robust dynamic programming, implemented and tested.</li>
+        <li>Current direction: a robustness audit of when conformal hallucination guarantees survive distribution shift.</li>
+        <li>Next: evaluation on human-labelled claims. No empirical findings yet.</li>
+        <li>With Dr. S. Raja, Department of Mathematics, Amrita School of Computing.</li>
+      </ul>
+      <div class="cta"><a class="btn ghost" data-magnetic href="https://github.com/antonyjasfer/Budget-Coupled-Robust-Belief-Propagation-for-Visual-Hallucination-Detection">Read the code</a></div>
+    </div>
+  </section>
+
+  <section id="about" data-focus="all" aria-labelledby="about-title">
+    <div class="panel wipe">
+      <h2 id="about-title">About</h2>
+      <p class="intro">I'm a B.Tech student in Artificial Intelligence and Data Science at Amrita Vishwa Vidyapeetham. Most of what I build starts at a hackathon and keeps going if the idea holds up.</p>
+      <p class="small placeholder-note">A longer introduction is coming in the next update.</p>
+    </div>
+  </section>
+
+  <section id="path" data-focus="projects" aria-labelledby="path-title">
+    <div class="panel wipe">
+      <h2 id="path-title">Path</h2>
+      <p class="intro">What I've been building, newest first.</p>
+      <ol class="path" id="pathlist"></ol>
+    </div>
+  </section>
+
+  <section id="contact" data-focus="all" aria-labelledby="contact-title">
+    <div class="panel wipe">
+      <h2 id="contact-title">Let's build something checkable</h2>
+      <p class="intro">I'm looking for internships and research collaborations in trustworthy AI, agents and applied ML. Hackathon teams welcome too.</p>
+      <div class="cta">
+        <a class="btn" data-magnetic href="https://github.com/antonyjasfer">GitHub</a>
+        <!-- LINKEDIN: add <a class="btn ghost" data-magnetic href="YOUR_LINKEDIN_URL">LinkedIn</a> -->
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">Built with Three.js and GSAP. The graph is drawn live in your browser.</footer>
+
+<aside id="detail" role="dialog" aria-modal="false" aria-labelledby="dTitle" hidden>
+  <button class="x" id="dClose" type="button" aria-label="Close project">×</button>
+  <h3 id="dTitle"></h3>
+  <p class="where" id="dWhere"></p>
+  <p id="dDesc"></p>
+  <p class="status" id="dStatus"></p>
+  <div class="stack" id="dStack"></div>
+  <div class="links" id="dLinks"></div>
+</aside>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>

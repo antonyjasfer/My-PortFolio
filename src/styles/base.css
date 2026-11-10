@@ -1,0 +1,122 @@
+@import "./tokens.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+/* off-stage tour panels sit outside the viewport; never let them widen the page */
+html, body { overflow-x: clip; }
+html:not(.motion) { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background-color: var(--paper);
+  color: var(--ink);
+  font: 400 var(--step-0) / var(--leading-body) var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  /* v1's graph paper */
+  background-image:
+    linear-gradient(var(--rule) 1px, transparent 1px),
+    linear-gradient(90deg, var(--rule) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-attachment: fixed;
+}
+
+h1, h2, h3 { font-family: var(--font-display); margin: 0; text-wrap: balance; }
+h2 { font-size: var(--step-5); font-weight: 700; line-height: 1; letter-spacing: -0.025em; margin-bottom: var(--space-xs); }
+h3 { font-size: var(--step-2); font-weight: 650; line-height: var(--leading-snug); letter-spacing: -0.01em; margin-bottom: var(--space-3xs); }
+p { margin: 0 0 var(--space-s); max-width: var(--measure); }
+a { color: inherit; text-underline-offset: 3px; }
+img { max-width: 100%; }
+
+/* Focus: saffron alone is 1.9:1 on paper, so an ink edge carries the contrast. */
+:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px var(--saffron);
+  border-radius: 4px;
+}
+
+.skip {
+  position: fixed; left: var(--gutter); top: -100px; z-index: 20;
+  background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: var(--radius-pill);
+  font-weight: 600; text-decoration: none;
+}
+.skip:focus { top: 12px; }
+
+.small { font-size: var(--step--1); color: var(--slate); }
+
+/* ---- graph layers ---- */
+#graph {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; display: block;
+  z-index: var(--z-canvas); touch-action: pan-y; cursor: grab;
+}
+#graph.dragging { cursor: grabbing; }
+#graph-fallback {
+  position: fixed; z-index: var(--z-canvas); right: 0; top: 50%; translate: 0 -50%;
+  width: min(62vw, 960px); opacity: .9; pointer-events: none;
+}
+#graph-fallback[hidden] { display: none; }
+.nogl #graph { display: none; }
+#labels { position: fixed; inset: 0; pointer-events: none; z-index: var(--z-labels); overflow: hidden; }
+.nlabel {
+  position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform, opacity; opacity: 0;
+  font: 500 13px/1.2 var(--font-body); color: var(--ink);
+  padding: 2px 7px; border-radius: var(--radius-pill); background: rgba(238, 241, 245, .82);
+}
+.nlabel.skill { font-size: 12px; color: var(--slate); background: transparent; }
+#tip {
+  position: fixed; left: 0; top: 0; z-index: var(--z-tip); pointer-events: none; opacity: 0;
+  font: 500 13px/1 var(--font-body); background: var(--ink); color: var(--paper);
+  padding: 7px 10px; border-radius: 8px; transition: opacity var(--dur-instant);
+}
+
+/* ---- header ---- */
+header.top {
+  position: fixed; inset: 0 0 auto 0; z-index: var(--z-header);
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px var(--gutter); pointer-events: none;
+}
+header.top > * { pointer-events: auto; }
+.mark { font: 700 20px/1 var(--font-display); text-decoration: none; letter-spacing: -0.01em; display: inline-block; padding: 6px 0; }
+.top-nav { display: flex; gap: 6px; }
+.top-nav a {
+  display: inline-block; padding: 8px 10px; text-decoration: none;
+  font-weight: 500; font-size: 15px; color: var(--slate);
+}
+.top-nav a:hover, .top-nav a[aria-current="true"] { color: var(--ink); }
+.top-nav a[aria-current="true"] { text-decoration: underline; text-decoration-color: var(--saffron); text-decoration-thickness: 2px; text-underline-offset: 6px; }
+
+main { position: relative; z-index: var(--z-content); pointer-events: none; }
+.foot {
+  position: relative; z-index: var(--z-content);
+  padding: var(--space-m) var(--gutter) var(--space-xl); color: var(--slate); font-size: var(--step--1); text-align: right;
+}
+
+/* ---- buttons ---- */
+.btn {
+  display: inline-block; text-decoration: none; font-weight: 600; padding: 13px 20px;
+  border-radius: var(--radius-pill); background: var(--ink); color: var(--paper); border: 1.5px solid var(--ink);
+}
+.btn.ghost { background: transparent; color: var(--ink); }
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: var(--space-m); }
+
+/* ---- desktop cursor (fine pointers only; added by JS) ---- */
+.cursor-ring, .cursor-dot {
+  position: fixed; left: 0; top: 0; z-index: var(--z-cursor); pointer-events: none;
+  border-radius: 50%; opacity: 0; transition: opacity var(--dur-quick);
+}
+.cursor-ring {
+  width: 36px; height: 36px; margin: -18px 0 0 -18px; border: 1.5px solid var(--ink);
+  transition: opacity var(--dur-quick), scale var(--dur-quick) var(--ease-out);
+}
+.cursor-ring.is-hot { scale: 1.55; }
+.cursor-dot { width: 8px; height: 8px; margin: -4px 0 0 -4px; background: var(--saffron); box-shadow: 0 0 0 1.5px var(--ink); }
+.has-cursor .cursor-ring, .has-cursor .cursor-dot { opacity: 1; }
+
+@media (max-width: 860px) {
+  header.top { background: linear-gradient(rgba(238, 241, 245, .96) 70%, rgba(238, 241, 245, 0)); }
+  .top-nav a { padding: 8px 7px; font-size: 14px; }
+  .top-nav a.hide-s { display: none; }
+  .nlabel.skill { display: none; }
+  #graph-fallback { width: 100vw; top: 30%; opacity: .5; }
+}
