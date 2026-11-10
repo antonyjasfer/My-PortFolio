@@ -17,7 +17,7 @@ export function initTour({ section, steps, graph, focus, getScene, tokens, reduc
   const panels = [...section.querySelectorAll(".tour-panel")];
   const count = section.querySelector("#tour-count");
   const n = steps.length;
-  let active = -1;
+  let active = -1, focusKey = "";
 
   function setActive(i) {
     if (i === active) return;
@@ -62,10 +62,11 @@ export function initTour({ section, steps, graph, focus, getScene, tokens, reduc
       setActive(i);
       const from = i === 0 ? steps[0].id : steps[i - 1].id, to = steps[i].id;
       getScene().setTour(from, to, i === 0 ? 1 : Math.min(1, local / CHOREO.travel));
-      focus.set("tour", { ids: neighbourhood(graph, to), shift: shift() });
+      const sh = shift(), key = to + sh.join();
+      if (key !== focusKey) { focusKey = key; focus.set("tour", { ids: neighbourhood(graph, to), shift: sh }); }
     },
     onToggle(self) {
-      if (!self.isActive) { getScene().setTour(null); focus.release("tour"); }
+      if (!self.isActive) { getScene().setTour(null); focus.release("tour"); focusKey = ""; }
     },
   });
 

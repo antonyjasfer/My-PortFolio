@@ -7,4 +7,11 @@ import "./styles/sections.css";
 
 const afterFirstPaint = () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
 
-afterFirstPaint().then(() => import("./app.js"));
+afterFirstPaint()
+  .then(() => import("./app.js"))
+  .catch(() => {
+    // The page is fully readable without the app; show the static graph instead.
+    document.documentElement.classList.add("nogl", "intro-done");
+    const img = document.getElementById("graph-fallback");
+    if (img) img.hidden = false;
+  });

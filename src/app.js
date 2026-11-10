@@ -35,6 +35,7 @@ const whenIdle = () => new Promise((resolve) => {
   if (document.readyState === "complete") go(); else addEventListener("load", go, { once: true });
 });
 const sceneModule = whenIdle().then(() => import("./scene/scene.js"));
+sceneModule.catch(() => {}); // handled below; this only stops an unhandled-rejection report during boot
 
 const graph = buildGraph(PROJECTS);
 const tokens = readTokens();
@@ -75,18 +76,20 @@ const offMagnet = initMagnetic("[data-magnetic]", { tokens, reduced });
 const offCursor = initCursor({ tokens, reduced });
 
 // ---- scene ----
+let pending = null; // a scene that exists but is not attached yet
 sceneModule
   .then(async ({ createScene }) => {
-    const s = createScene({
+    const s = pending = createScene({
       canvas: $("#graph"), labels: $("#labels"), tip: $("#tip"), graph, reduced,
       particles: mobile ? 40 : 150, maxDpr: mobile ? 1.5 : 2, antialias: !mobile, skillLabels: !mobile,
     });
     await yieldTask();
     s.warm(); // shaders compile in this task; the first frame then only draws
     await yieldTask();
-    scene = s;
+    scene = s; pending = null;
     focus.refresh();
     intro.attachScene(s);
+    tour.trigger?.update(); // if the user is parked mid-tour, show the tour camera now
     s.onPick((hit) => (hit.kind === "p" ? list.open(hit.id) : list.selectChip(hit.label)));
     s.onLost(() => useFallback("context lost"));
   })
@@ -94,6 +97,7 @@ sceneModule
 
 function useFallback(reason) {
   if (import.meta.env.DEV) console.info("[graph] static fallback:", reason?.message || reason);
+  pending?.dispose(); pending = null;
   scene.dispose();
   scene = createNullScene();
   document.documentElement.classList.add("nogl");
@@ -105,7 +109,7 @@ function useFallback(reason) {
 let rt = 0;
 addEventListener("resize", () => {
   clearTimeout(rt);
-  rt = setTimeout(() => { scene.resize(); sections.refresh(); ScrollTrigger.refresh(); }, 150);
+  rt = setTimeout(() => { scene.resize(); sections.refresh(); }, 150); // ScrollTrigger refreshes itself on resize
 });
 
 // Turning reduced motion on or off changes what is set up; reload is simplest and safe.
@@ -135,7 +139,7 @@ if (import.meta.env.DEV) window.__portfolio = { getScene, focus, lenis };
 
 if (import.meta.hot) {
   import.meta.hot.dispose(() => {
-    scene.dispose(); tour.kill(); offMagnet(); offCursor(); lenis?.destroy();
+    scene.dispose(); tour.kill(); sections.disconnect(); offMagnet(); offCursor(); lenis?.destroy();
     ScrollTrigger.getAll().forEach((t) => t.kill());
   });
 }

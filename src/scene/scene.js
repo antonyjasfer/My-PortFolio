@@ -212,11 +212,14 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
       if (n) pickCbs.forEach((cb) => cb(n.kind === "p" ? { kind: "p", id: n.id } : { kind: "s", label: n.label }));
     }
   };
+  const onCancel = () => { rig.state.dragging = false; canvas.classList.remove("dragging"); rig.release(); };
   const onLeave = () => { tip.style.opacity = 0; if (hover) { hover = null; api.invalidate(); } };
   canvas.addEventListener("pointerdown", onDown);
   canvas.addEventListener("pointermove", onMove);
   canvas.addEventListener("pointerup", onUp);
   canvas.addEventListener("pointerleave", onLeave);
+  canvas.addEventListener("pointercancel", onCancel);
+  canvas.addEventListener("lostpointercapture", onCancel);
 
   // ---- pausing: hidden tab or offscreen canvas ----
   let tabHidden = document.hidden, offscreen = false;
@@ -236,6 +239,8 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
     canvas.removeEventListener("pointermove", onMove);
     canvas.removeEventListener("pointerup", onUp);
     canvas.removeEventListener("pointerleave", onLeave);
+    canvas.removeEventListener("pointercancel", onCancel);
+    canvas.removeEventListener("lostpointercapture", onCancel);
     canvas.removeEventListener("webglcontextlost", onLostEvt);
     document.removeEventListener("visibilitychange", onVis);
     io.disconnect();
