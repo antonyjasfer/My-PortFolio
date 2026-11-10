@@ -1,0 +1,108 @@
+/* Design tokens. JS reads the motion tokens through src/motion/tokens.js,
+   so durations and easings exist in exactly one place. */
+
+@font-face {
+  font-family: "Bricolage Grotesque";
+  src: url("/fonts/bricolage-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/fonts/plex-sans-latin.woff2") format("woff2");
+  font-weight: 400 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: url("/fonts/plex-sans-italic-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  /* colour: v1 palette plus two AA fixes (see docs/PLAN.md) */
+  --paper: #EEF1F5;
+  --paper-2: #E2E7EE;
+  --ink: #16213E;
+  --slate: #5B6B82;        /* secondary text on --paper only (4.79:1) */
+  --slate-strong: #4E5D73; /* secondary text on --paper-2 (5.39:1) */
+  --saffron: #E8A317;      /* marks and particles; never text on paper */
+  --signal: #D7263D;       /* non-text flag marks */
+  --signal-text: #B5172C;  /* signal as text (5.93:1) */
+  --rule: rgba(22, 33, 62, .14);
+  --veil: rgba(238, 241, 245, .9);
+
+  /* type */
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  /* fluid scale, 360px -> 1440px; ratio 1.2 -> 1.333, base 16 -> 18px */
+  --step--1: clamp(0.8333rem, 0.8298rem + 0.0157vw, 0.844rem);
+  --step-0: clamp(1rem, 0.9583rem + 0.1852vw, 1.125rem);
+  --step-1: clamp(1.2rem, 1.1001rem + 0.4439vw, 1.4996rem);
+  --step-2: clamp(1.44rem, 1.2537rem + 0.8281vw, 1.999rem);
+  --step-3: clamp(1.728rem, 1.4158rem + 1.3877vw, 2.6647rem);
+  --step-4: clamp(2.0736rem, 1.5808rem + 2.1902vw, 3.552rem);
+  --step-5: clamp(2.4883rem, 1.7395rem + 3.3281vw, 4.7348rem);
+  --step-6: clamp(2.986rem, 1.8775rem + 4.9267vw, 6.3115rem);
+  --step-hero: clamp(3.25rem, 1.4583rem + 7.963vw, 8.625rem);
+  --leading-tight: .9;
+  --leading-snug: 1.2;
+  --leading-body: 1.6;
+  --measure: 62ch;
+
+  /* space */
+  --space-3xs: clamp(0.25rem, 0.2292rem + 0.0926vw, 0.3125rem);
+  --space-2xs: clamp(0.5rem, 0.4792rem + 0.0926vw, 0.5625rem);
+  --space-xs: clamp(0.75rem, 0.7083rem + 0.1852vw, 0.875rem);
+  --space-s: clamp(1rem, 0.9583rem + 0.1852vw, 1.125rem);
+  --space-m: clamp(1.5rem, 1.4167rem + 0.3704vw, 1.75rem);
+  --space-l: clamp(2rem, 1.8333rem + 0.7407vw, 2.5rem);
+  --space-xl: clamp(3rem, 2.6667rem + 1.4815vw, 4rem);
+  --space-2xl: clamp(4rem, 3.3333rem + 2.963vw, 6rem);
+  --space-3xl: clamp(6rem, 5rem + 4.4444vw, 9rem);
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --col: min(560px, 44vw);
+
+  /* shape: radius by role, not one radius for everything */
+  --radius-panel: 18px;
+  --radius-pill: 999px;
+  --radius-slab: 0;
+  --shadow-hard: 8px 8px 0 var(--ink);
+
+  /* motion: read by JS (src/motion/tokens.js) */
+  --dur-instant: 120ms;
+  --dur-quick: 240ms;
+  --dur-base: 480ms;
+  --dur-slow: 900ms;
+  --dur-epic: 1600ms;
+  --stagger-line: 80ms;
+  --stagger-node: 350ms;  /* total spread of node arrival across the graph */
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  --ease-in-out: cubic-bezier(.65, 0, .35, 1);
+  --ease-travel: cubic-bezier(.45, .05, .2, 1);
+
+  /* z-order */
+  --z-canvas: 0;
+  --z-labels: 1;
+  --z-content: 2;
+  --z-tip: 4;
+  --z-header: 5;
+  --z-dialog: 6;
+  --z-cursor: 9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-instant: 0ms;
+    --dur-quick: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+    --dur-epic: 0ms;
+    --stagger-line: 0ms;
+    --stagger-node: 0ms;
+  }
+}
