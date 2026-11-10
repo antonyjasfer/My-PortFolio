@@ -64,14 +64,98 @@ const activePanel = (page) => page.evaluate(() => [...document.querySelectorAll(
     });
     check("focused tour link follows the active panel", where === 1, "focus=" + where);
 
-    // 5. dialog: opens from the list, Escape closes and returns focus
+    // 5. project list: a list item opens the project view; Esc returns focus to it
     await page.evaluate(() => scrollTo(0, document.querySelector("#plist").getBoundingClientRect().top + scrollY - 200));
     await page.waitForTimeout(600);
     await page.click("#plist li:first-child button");
-    check("dialog opens with focus on Close", await page.evaluate(() => document.activeElement.id === "dClose"));
+    await page.waitForTimeout(600);
+    check("list: opens the project view with focus on its heading", await page.evaluate(() => !document.querySelector("#project-view").hidden && document.activeElement.id === "pv-title"));
     await page.keyboard.press("Escape");
-    check("Escape closes and returns focus", await page.evaluate(() => document.querySelector("#detail").hidden && document.activeElement.closest("#plist") !== null));
+    await page.waitForTimeout(600);
+    check("list: Esc closes and returns focus to the list item", await page.evaluate(() => document.querySelector("#project-view").hidden && document.activeElement.closest("#plist") !== null));
     check("still no console errors", errors.length === 0, errors.join(" | "));
+    await page.close();
+  }
+
+  // 5b. research explorable: the slider and the coupling toggle change the interval
+  {
+    const { page, errors } = await open(browser);
+    await page.evaluate(() => document.querySelector("#rx").scrollIntoView());
+    await page.waitForTimeout(600);
+    const lower = () => page.evaluate(() => Number(document.querySelector("#rx").dataset.lower));
+    const l0 = await lower();
+    await page.focus("#rx-eps");
+    for (let i = 0; i < 10; i++) await page.keyboard.press("ArrowRight");   // keyboard, +0.5
+    const l1 = await lower();
+    check("research: raising ε lowers the low end of the interval", l1 < l0, `${l0} -> ${l1}`);
+    await page.click("#rx-couple");
+    const l2 = await lower();
+    check("research: independent budgets widen the interval further", l2 < l1, `${l1} -> ${l2}`);
+    await page.waitForTimeout(400);
+    const v = await page.textContent("#rx-verdict");
+    check("research: verdict reads the same numbers", v.includes(l2.toFixed(2)), v);
+    await page.click("[data-rx-step=next]");
+    const msg = await page.evaluate(() => [...document.querySelectorAll(".rx-msg")].filter((t) => t.textContent).length);
+    check("research: a step shows the observation messages", msg === 4, `labels=${msg}`);
+    check("research: no console errors", errors.length === 0, errors.join(" | "));
+    await page.close();
+  }
+
+  // 5c. project route: opens from the timeline, Esc returns to the same place with focus restored
+  {
+    const { page, errors } = await open(browser);
+    await page.evaluate(() => scrollTo(0, document.querySelector("#path").getBoundingClientRect().top + scrollY));
+    await page.waitForTimeout(900);
+    const y0 = await page.evaluate(() => Math.round(scrollY));
+    await page.click("#pathlist li:nth-child(3) .entry-links a");
+    await page.waitForTimeout(700);
+    const opened = await page.evaluate(() => ({ hash: location.hash, visible: !document.querySelector("#project-view").hidden, title: document.querySelector("#pv-title").textContent, focus: document.activeElement.id, inert: document.querySelector("main").inert }));
+    check("route: timeline link opens #/project/visca", opened.hash === "#/project/visca" && opened.visible && opened.title === "VISCA BARCA", JSON.stringify(opened));
+    check("route: focus moves to the heading and the page behind is inert", opened.focus === "pv-title" && opened.inert);
+    await page.keyboard.press("Escape");
+    await page.waitForTimeout(700);
+    const closed = await page.evaluate(() => ({ hash: location.hash, y: Math.round(scrollY), focus: document.activeElement.textContent, hidden: document.querySelector("#project-view").hidden }));
+    check("route: Esc closes and restores the scroll position", closed.hidden && closed.hash === "" && Math.abs(closed.y - y0) < 4, `y0=${y0} ${JSON.stringify(closed)}`);
+    check("route: focus returns to the link that opened it", /VISCA/.test(closed.focus), closed.focus);
+    check("route: no console errors", errors.length === 0, errors.join(" | "));
+    await page.close();
+  }
+
+  // 5d. deep link on first load, then Back leaves the route
+  {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const errors = []; page.on("pageerror", (e) => errors.push(e.message));
+    await page.goto(URL.replace("/?", "/?") + "#/project/arbiter", { waitUntil: "load" });
+    await page.waitForTimeout(1500);
+    const t = await page.evaluate(() => !document.querySelector("#project-view").hidden && document.querySelector("#pv-title").textContent);
+    check("route: deep link opens the project on first load", t === "Arbiter", String(t));
+    await page.click("#pv-back");
+    await page.waitForTimeout(500);
+    check("route: Back closes a deep-linked project", await page.evaluate(() => document.querySelector("#project-view").hidden && location.hash === ""));
+    check("route: deep link has no console errors", errors.length === 0, errors.join(" | "));
+    await page.close();
+  }
+
+  // 5e. idle rendering must not stall scrolling: after the graph goes idle, a scroll still drives the tour
+  {
+    const { page } = await open(browser);
+    await page.waitForTimeout(2500);                       // let the scene drop to its idle frame rate
+    const top = await tourTop(page);
+    await page.evaluate((y) => scrollTo(0, y + innerHeight * 4.6), top);
+    await page.waitForTimeout(900);
+    check("idle: a scroll after idling still updates the tour", (await activePanel(page)) === 4, "active=" + (await activePanel(page)));
+    await page.close();
+  }
+
+  // 5f. about: the photo loads; contact shows only real links
+  {
+    const { page } = await open(browser);
+    await page.evaluate(() => document.querySelector("#about").scrollIntoView());
+    await page.waitForTimeout(800);
+    const photo = await page.evaluate(() => { const i = document.querySelector("#portrait img"); return i && i.complete && i.naturalWidth > 0; });
+    check("about: headshot loads", photo);
+    const hrefs = await page.evaluate(() => [...document.querySelectorAll("#contact-links a")].map((a) => a.getAttribute("href")));
+    check("contact: only real links, no TODO", hrefs.length >= 1 && hrefs.every((h) => h.startsWith("https://") || h.startsWith("mailto:")) && !hrefs.some((h) => /TODO/i.test(h)), hrefs.join(","));
     await page.close();
   }
 
@@ -89,6 +173,10 @@ const activePanel = (page) => page.evaluate(() => [...document.querySelectorAll(
     check("reduced motion: no pinning", !s.pin);
     check("reduced motion: tour is a static list, all panels reachable", s.staticTour && !s.inert);
     check("reduced motion: hero visible immediately", s.heroVisible);
+    await page.evaluate(() => document.querySelector("#rx").scrollIntoView());
+    await page.click("[data-rx-step=next]"); await page.click("[data-rx-step=next]");
+    const rx = await page.evaluate(() => ({ dots: [...document.querySelectorAll(".rx-particle")].every((d) => d.getAttribute("opacity") === "0"), step: document.querySelector("#rx-step-label").textContent }));
+    check("reduced motion: research has no moving particles, steps still work", rx.dots && /Step 2 of 2/.test(rx.step), JSON.stringify(rx));
     check("reduced motion: no console errors", errors.length === 0, errors.join(" | "));
     await page.close();
   }

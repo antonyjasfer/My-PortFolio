@@ -39,14 +39,16 @@ export function initProjectView({ projects, graph, focus, lenis, reduced, tokens
 
   // shared element: the clicked title morphs into the heading (or back)
   function transition(update, from, to) {
-    const canVT = !reduced && from && typeof document.startViewTransition === "function";
+    // a shared element needs both ends; without one (deep link, graph pick) it is a plain swap
+    const shared = !reduced && from && to;
+    const canVT = shared && typeof document.startViewTransition === "function";
     if (canVT) {
       from.style.viewTransitionName = "project-title";
       const vt = document.startViewTransition(() => { from.style.viewTransitionName = ""; update(); to.style.viewTransitionName = "project-title"; });
       vt.finished.finally(() => { to.style.viewTransitionName = ""; });
       return vt.updateCallbackDone;
     }
-    const a = from && !reduced ? from.getBoundingClientRect() : null;
+    const a = shared ? from.getBoundingClientRect() : null;
     update();
     if (a && to.isConnected && to.offsetParent !== null) {
       const b = to.getBoundingClientRect();

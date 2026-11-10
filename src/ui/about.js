@@ -3,7 +3,6 @@
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SITE } from "../data/site.js";
-import { PROJECTS } from "../data/projects.js";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -12,26 +11,7 @@ export const DEPTH = { plate: -0.45, photo: 0.18, dot: 0.9, maxPx: 14 };
 
 export function initAbout({ reduced, tokens }) {
   const $ = (s) => document.querySelector(s);
-  $("#about-lede").textContent =
-    `I'm Antony, a B.Tech student in Artificial Intelligence and Data Science at ${SITE.university}, ${SITE.campus}. ` +
-    "I like building AI systems that have to show their working: a contract reader that points to the clause behind each answer, " +
-    "a payment flow designed to release money only after the work is checked, a belief score that comes with a range instead of one number. " +
-    "Most of these started at hackathons, and the code for every project on this page is public.";
-
-  const facts = [
-    ["Studying", `${SITE.degree} at ${SITE.university}, ${SITE.campus}`],
-    ["Researching", "Robust belief propagation for catching hallucinated claims in vision-language models. Paper in progress."],
-    ["Building", `${PROJECTS.length} projects on this page, each linked to its code`],
-    ["Code", null],
-  ];
-  const dl = $("#about-facts");
-  for (const [k, v] of facts) {
-    const dt = document.createElement("dt"), dd = document.createElement("dd");
-    dt.textContent = k;
-    if (v) dd.textContent = v;
-    else { const a = document.createElement("a"); a.href = SITE.github; a.textContent = SITE.github.replace("https://", ""); dd.appendChild(a); }
-    dl.append(dt, dd);
-  }
+  // The paragraph and facts are written into the HTML at build time (scripts/seo.mjs).
 
   // photo fallback: a monogram built from the brand tokens
   const fig = $("#portrait"), img = fig.querySelector("img");

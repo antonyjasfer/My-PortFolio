@@ -231,4 +231,5 @@ ol.path .entry-links a { font-weight: 500; }
   ol.path li { grid-template-columns: 1fr; gap: 2px; }
   .contact { padding: 24px 4px; }
   .pv-inner { padding-top: var(--space-xl); }
+  .noscript-projects { padding: 0 16px; }
 }
