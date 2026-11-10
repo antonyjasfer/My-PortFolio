@@ -42,6 +42,8 @@ export function initProjectsList({ projects, graph, focus }) {
   function selectChip(k) {
     chips.querySelectorAll(".chip").forEach((x) => x.setAttribute("aria-pressed", String(x.textContent === (k || "All"))));
     plist.querySelectorAll("li").forEach((li) => (li.hidden = !!k && !li.dataset.k.split("|").includes(k)));
+    const shown = plist.querySelectorAll("li:not([hidden])").length;
+    document.querySelector("#plist-status").textContent = k ? `${shown} projects use ${k}` : `All ${shown} projects shown`;
     if (k && graph.byId[skillId(k)]) focus.set("chip", { ids: neighbourhood(graph, skillId(k)) });
     else focus.release("chip");
   }
@@ -58,7 +60,7 @@ export function initProjectsList({ projects, graph, focus }) {
     p.k.forEach((k) => { const s = document.createElement("span"); s.textContent = k; st.appendChild(s); });
     const L = $("#dLinks"); L.replaceChildren();
     const a = document.createElement("a"); a.href = repoUrl(p); a.textContent = "Code on GitHub"; L.appendChild(a);
-    if (p.live) { const b = document.createElement("a"); b.href = p.live; b.textContent = "Live site"; L.appendChild(b); }
+    if (p.live) { const b = document.createElement("a"); b.href = p.live; b.textContent = "Live site"; b.setAttribute("aria-label", `${p.t} live site`); L.appendChild(b); }
     det.hidden = false;
     void det.offsetWidth; // flush styles so the .open transition runs from the hidden state
     det.classList.add("open");

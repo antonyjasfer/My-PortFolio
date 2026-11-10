@@ -21,6 +21,7 @@ export function initTour({ section, steps, graph, focus, getScene, tokens, reduc
 
   function setActive(i) {
     if (i === active) return;
+    const hadFocus = panels.some((p) => p.contains(document.activeElement));
     active = i;
     panels.forEach((p, k) => {
       const on = k === i;
@@ -28,6 +29,8 @@ export function initTour({ section, steps, graph, focus, getScene, tokens, reduc
       p.classList.toggle("is-active", on);
     });
     count.textContent = `${i + 1} of ${n}`;
+    // scrolling past a focused panel would leave focus on <body>; move it along
+    if (hadFocus) panels[i].querySelector("a")?.focus({ preventScroll: true });
   }
 
   if (reduced) {

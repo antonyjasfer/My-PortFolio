@@ -18,9 +18,14 @@ const ONE = new THREE.Vector3();
  * @param {{canvas:HTMLCanvasElement, labels:HTMLElement, tip:HTMLElement, graph:any,
  *          reduced:boolean, particles:number}} opts
  */
-export function createScene({ canvas, labels: labelBox, tip, graph, reduced, particles: particleCount }) {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: devicePixelRatio < 2, alpha: true, powerPreference: "low-power" });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+export function createScene({ canvas, labels: labelBox, tip, graph, reduced, particles: particleCount, maxDpr = 2, antialias = true, skillLabels = true }) {
+  const dpr = () => Math.min(devicePixelRatio, maxDpr);
+  // Ask for the context ourselves: without WebGL this throws quietly into the
+  // SVG fallback instead of three logging context-creation errors.
+  const gl = canvas.getContext("webgl2", { antialias: antialias && dpr() < 1.5, alpha: true, powerPreference: "low-power" });
+  if (!gl) throw new Error("WebGL2 unavailable");
+  const renderer = new THREE.WebGLRenderer({ canvas, context: gl });
+  renderer.setPixelRatio(dpr());
 
   const { nodes, edges, byId } = applyPositions(graph, LAYOUT.positions);
   const start = scatter(graph);
@@ -35,7 +40,8 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
   const pGeo = new THREE.IcosahedronGeometry(0.46, 1), sGeo = new THREE.IcosahedronGeometry(0.17, 1);
   const cur = {}; // current (animated) position per node id
   const meshes = nodes.map((n) => {
-    const mat = new THREE.MeshStandardMaterial({ color: n.kind === "p" ? INK : SLATE, flatShading: true, roughness: 0.55, metalness: 0.1, transparent: true });
+    // Lambert, not Standard: flat-shaded facets look the same and the shader is far cheaper
+    const mat = new THREE.MeshLambertMaterial({ color: n.kind === "p" ? INK : SLATE, flatShading: true, transparent: true });
     const m = new THREE.Mesh(n.kind === "p" ? pGeo : sGeo, mat);
     m.userData.n = n; n.mesh = m; n.op = 1; n.target = 1;
     cur[n.id] = { ...n.p };
@@ -54,7 +60,7 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
   const P = createParticles(graph, particleCount, SAFF);
   world.add(P.mesh, P.courier);
 
-  const lab = createLabels(labelBox, nodes);
+  const lab = createLabels(labelBox, nodes, { skills: skillLabels });
 
   // ---- state ----
   let assembly = reduced ? 1 : 0, speed = reduced ? 0.3 : 0, edgeK = edgeProgress(assembly);
@@ -79,6 +85,12 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
   }
   place();
 
+  let edgeColDirty = true;
+  const posOf = (id) => cur[id];
+  const visOf = (ei) => (edgeK >= 1 && Math.min(byId[edges[ei][0]].op, byId[edges[ei][1]].op) > 0.5 ? 1 : 0);
+  const showLabel = (n) => n.kind === "p" || hover === n || (focus && focus.has(n.id) && focus.size < 12);
+  const labelOpacity = (n) => n.op * Math.min(1, assembly * 1.4);
+
   // ---- API ----
   const api = {
     isNull: false,
@@ -88,6 +100,7 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
       for (const n of nodes) n.target = !focus || focus.has(n.id) ? 1 : DIM;
       if (!tour) rig.aimAt(f && f.aimId && byId[f.aimId] ? byId[f.aimId].p : null);
       if (reduced) for (const n of nodes) n.op = n.target;
+      edgeColDirty = true;
       api.invalidate();
     },
     setAssembly(t) { assembly = t; place(); api.invalidate(); },
@@ -119,7 +132,7 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
     setShift(x, y) { rig.state.shiftXT = x; rig.state.shiftYT = y; api.invalidate(); },
     resize() {
       const w = innerWidth, h = innerHeight;
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.setPixelRatio(dpr());
       renderer.setSize(w, h, false);
       camera.aspect = w / h;
       rig.state.baseZ = w < 860 ? 33 : w < 1200 ? 27 : 24;
@@ -127,6 +140,8 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
       api.invalidate();
     },
     invalidate() { dirty = true; },
+    /** compile shaders in their own task, so the first frame only draws. (compileAsync was measured slower: the first frame then waited on linking.) */
+    warm() { renderer.compile(scene, camera); },
     render(dt) {
       if (paused || dead || disposed) return;
       // reduced motion: draw only when something changed
@@ -141,19 +156,19 @@ export function createScene({ canvas, labels: labelBox, tip, graph, reduced, par
         const s = hover === n ? 1.3 : 1;
         n.mesh.scale.lerp(ONE.set(s, s, s), reduced ? 1 : 0.2);
       }
-      edges.forEach(([a, b], i) => {
-        const o = Math.min(byId[a].op, byId[b].op) * 0.45;
-        for (let k = 0; k < 2; k++) { const c = i * 8 + k * 4; eCol[c] = 0.36; eCol[c + 1] = 0.42; eCol[c + 2] = 0.52; eCol[c + 3] = o; }
-      });
-      eGeo.attributes.color.needsUpdate = true;
-      P.update(reduced ? 0 : dt, speed,
-        (id) => cur[id],
-        (ei) => (edgeK >= 1 && Math.min(byId[edges[ei][0]].op, byId[edges[ei][1]].op) > 0.5 ? 1 : 0));
+      // edge alpha follows node opacity, so it only needs rewriting while opacities move
+      if (settling || edgeColDirty) {
+        edgeColDirty = settling;
+        edges.forEach(([a, b], i) => {
+          const o = Math.min(byId[a].op, byId[b].op) * 0.45;
+          for (let k = 0; k < 2; k++) { const c = i * 8 + k * 4; eCol[c] = 0.36; eCol[c + 1] = 0.42; eCol[c + 2] = 0.52; eCol[c + 3] = o; }
+        });
+        eGeo.attributes.color.needsUpdate = true;
+      }
+      P.update(reduced ? 0 : dt, speed, posOf, visOf);
       if (P.halo.material.opacity > 0) P.halo.lookAt(camera.position);
       renderer.render(scene, camera);
-      lab.update(camera, meshes, innerWidth, innerHeight,
-        (n) => n.kind === "p" || hover === n || (focus && focus.has(n.id) && focus.size < 12),
-        (n) => n.op * Math.min(1, assembly * 1.4));
+      lab.update(camera, meshes, innerWidth, innerHeight, showLabel, labelOpacity);
       if (reduced && (settling || rig.settling())) dirty = true;
     },
     onPick(cb) { pickCbs.add(cb); return () => pickCbs.delete(cb); },

@@ -8,7 +8,6 @@
 <meta name="theme-color" content="#EEF1F5">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2712%27 fill=%27%2316213E%27/%3E%3Ccircle cx=%2724%27 cy=%278%27 r=%275%27 fill=%27%23E8A317%27/%3E%3C/svg%3E">
 <link rel="preload" href="/fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/plex-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <script>
   // Mark JS + motion state before first paint so the intro can hide what it will reveal.
   (function (d) {
@@ -51,14 +50,15 @@
       <p class="intro">Six builds, in the order the graph connects them. Scroll and the camera follows the skills they share.</p>
     </div>
     <div class="tour" id="tour">
-      <ol class="tour-panels" id="tour-panels"></ol>
+      <ol class="tour-panels" id="tour-panels" role="list" aria-label="Featured projects"></ol>
       <p class="tour-count" id="tour-count" aria-hidden="true"></p>
     </div>
     <div class="panel all-projects wipe">
       <h3 class="list-title">Everything, by skill</h3>
       <p class="intro">Pick a skill to see where I've used it.</p>
       <div class="chips" role="group" aria-label="Filter projects by skill" id="chips"></div>
-      <ul class="plist" id="plist"></ul>
+      <ul class="plist" id="plist" role="list"></ul>
+      <p class="sr-only" role="status" id="plist-status"></p>
     </div>
   </section>
 
@@ -69,7 +69,7 @@
       <p class="intro">When a vision-language model says "there is a dog in this image", how sure should we be? I model the claim and its visual evidence as a tree-structured graphical model, run exact belief propagation, and let an adversary spend a limited budget corrupting the evidence. The result is a probability interval, not a single score.</p>
       <div class="demo" id="demo">
         <svg viewBox="0 0 320 150" aria-hidden="true" id="tree"></svg>
-        <label for="eps">Adversary budget: <output id="epsOut" for="eps">0.05</output></label>
+        <label for="eps">Adversary budget: <output id="epsOut" for="eps" aria-live="off">0.05</output></label>
         <input id="eps" type="range" min="0" max="0.25" step="0.01" value="0.05">
         <div class="toggle"><input type="checkbox" id="couple" checked><label for="couple">Share one budget across the whole tree</label></div>
         <div class="interval" aria-hidden="true"><div class="half"></div><div class="band" id="band"></div></div>

@@ -29,9 +29,7 @@ section { min-height: 100vh; padding: var(--space-3xl) var(--gutter) var(--space
 /* While the intro is pending, hide only what it will reveal. If JS fails,
    a delayed animation reveals everything anyway. */
 .motion:not(.intro-done) .hero-title,
-.motion:not(.intro-done) .lede,
-.motion:not(.intro-done) .meta,
-.motion:not(.intro-done) .hint { visibility: hidden; animation: reveal-anyway 0s 2.5s forwards; }
+.motion:not(.intro-done) .hint { visibility: hidden; animation: reveal-anyway 0s 1.5s forwards; }
 @keyframes reveal-anyway { to { visibility: visible; } }
 .hl { will-change: transform; }
 /* SplitText line masks clip at the line box; with leading .9 that cuts the
@@ -93,7 +91,7 @@ section { min-height: 100vh; padding: var(--space-3xl) var(--gutter) var(--space
 .demo input[type="range"] { width: 100%; accent-color: var(--ink); }
 .demo .small { color: var(--slate-strong); margin: 8px 0 0; }
 .toggle { display: flex; gap: 10px; align-items: center; margin-top: 10px; font-size: 15px; }
-.toggle input { width: 18px; height: 18px; accent-color: var(--ink); margin: 0; }
+.toggle input { width: 24px; height: 24px; accent-color: var(--ink); margin: 0; }
 .toggle label { margin: 0; }
 .interval {
   position: relative; height: 30px; margin: 16px 0 8px; border-radius: 8px; overflow: hidden;

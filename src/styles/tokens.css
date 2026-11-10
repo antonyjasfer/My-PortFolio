@@ -28,8 +28,11 @@
   --paper: #EEF1F5;
   --paper-2: #E2E7EE;
   --ink: #16213E;
-  --slate: #5B6B82;        /* secondary text on --paper only (4.79:1) */
-  --slate-strong: #4E5D73; /* secondary text on --paper-2 (5.39:1) */
+  /* secondary text: v1's #5B6B82 is only 4.79:1 on paper and drops below 4.5
+     on the translucent veils over the graph, so text uses the darker slate */
+  --slate: #4E5D73;        /* 5.9:1 on paper, 5.4:1 on paper-2 */
+  --slate-strong: #4E5D73;
+  --slate-mark: #5B6B82;   /* v1 slate, for non-text marks (graph strokes) */
   --saffron: #E8A317;      /* marks and particles; never text on paper */
   --signal: #D7263D;       /* non-text flag marks */
   --signal-text: #B5172C;  /* signal as text (5.93:1) */

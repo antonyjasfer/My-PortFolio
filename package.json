@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test \"tests/*.test.js\"",
-    "fallback": "node scripts/render-fallback.mjs"
+    "fallback": "node scripts/render-fallback.mjs",
+    "e2e": "node scripts/e2e.cjs"
   },
   "dependencies": {
     "gsap": "^3.15.1",

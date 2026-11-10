@@ -5,18 +5,12 @@ gsap.registerPlugin(SplitText);
 
 // Offsets (seconds) of each beat in the hero sequence. Durations and easings
 // come from the CSS tokens; only the choreography lives here.
+// The lede and meta are Static on purpose: they are on screen at first paint
+// (they are the LCP candidates), so only the headline and the graph move.
 export const CHOREO = {
-  lede: 0.45,       // support follows while the headline is still settling
-  meta: 0.6,
   particles: 1.1,   // messages start once edges have mostly drawn
   hint: 1.15,       // decoration, fade only
-  fontWaitMs: 800,  // never hold the intro longer than this for webfonts
 };
-
-const fontsReady = () => Promise.race([
-  document.fonts ? document.fonts.ready : Promise.resolve(),
-  new Promise((r) => setTimeout(r, CHOREO.fontWaitMs)),
-]);
 
 /**
  * The hero intro: headline lines rise out of their masks while the graph
@@ -31,7 +25,7 @@ export function playIntro({ hero, tokens, reduced }) {
   const sync = () => { if (scene) { scene.setAssembly(proxy.assembly); scene.setSpeed(proxy.speed); } };
 
   const title = hero.querySelector(".hero-title");
-  const lede = hero.querySelector(".lede"), meta = hero.querySelector(".meta"), hint = hero.querySelector(".hint");
+  const hint = hero.querySelector(".hint");
 
   if (reduced) {
     document.documentElement.classList.add("intro-done");
@@ -39,7 +33,9 @@ export function playIntro({ hero, tokens, reduced }) {
   }
 
   const { dur, stagger, ease } = tokens;
-  const ready = fontsReady().then(() => {
+  // No webfont wait: the headline's lines are explicit block spans, so the
+  // split cannot change when Bricolage swaps in.
+  const ready = Promise.resolve().then(() => {
     const split = SplitText.create(title, { type: "lines", mask: "lines", linesClass: "hl" });
     tl = gsap.timeline({
       defaults: { ease: ease.out },
@@ -49,8 +45,6 @@ export function playIntro({ hero, tokens, reduced }) {
       .from(split.lines, { yPercent: 112, duration: dur.slow, stagger: stagger.line }, 0)
       // graph assembly runs on the same clock; its per-node easing is in assembly.js
       .to(proxy, { assembly: 1, duration: dur.epic, ease: "none", onUpdate: sync }, 0)
-      .fromTo(lede, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: dur.base }, CHOREO.lede)
-      .fromTo(meta, { autoAlpha: 0, y: 8 }, { autoAlpha: 1, y: 0, duration: dur.base }, CHOREO.meta)
       .to(proxy, { speed: 1, duration: dur.slow, ease: ease["in-out"], onUpdate: sync }, CHOREO.particles)
       .fromTo(hint, { autoAlpha: 0 }, { autoAlpha: 1, duration: dur.quick }, CHOREO.hint);
   });

@@ -6,7 +6,7 @@ export function createNullScene() {
   return {
     isNull: true,
     setFocus: noop, setAssembly: noop, setSpeed: noop, setTour: noop, setShift: noop,
-    resize: noop, render: noop, invalidate: noop,
+    resize: noop, render: noop, invalidate: noop, warm: noop,
     onPick: () => noop, onLost: () => noop, dispose: noop,
   };
 }
