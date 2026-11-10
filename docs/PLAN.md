@@ -247,3 +247,49 @@ setPaused(bool) · onPick(cb) · dispose()
   - The scene loads on idle after `load`. On slow devices the graph assembly can follow the headline instead of running exactly with it.
   - `--slate` is darkened to `#4E5D73` for AA over translucent panels.
 - Prompt 2: About, the research demo (still v1's toy), Timeline/Path design, Contact.
+
+---
+
+# Prompt 2: content, research explorable, mobile performance
+
+**Goal:** fill the stubbed sections with real content, replace the toy research demo with an explorable of the actual method, and reach Lighthouse mobile Performance ≥ 85 without removing the graph.
+**Branch:** `feat/content` from `feat/foundation`. Design direction, palette, fonts and the signature motion are unchanged and only extended.
+
+## Global constraints (Prompt 2)
+- Personal facts come only from `src/data/site.js`. A value set to `TODO` renders a neutral fallback and stays visibly TODO in that file. LinkedIn and email are TODO.
+- Photo: `public/me.jpg` (from the uploaded headshot) plus `me-400.webp` and `me-720.webp`. The "AJ" monogram is the fallback if it fails to load.
+- Research copy says *illustration of the method*: no accuracy numbers, benchmarks, publication claims or co-author list. Paper status is "in progress".
+- Only real, verifiable timeline entries.
+- Still no runtime dependencies beyond three, gsap and lenis. Playwright (OG image, e2e) and axe-core (QA) are run through `npx`/global and are not added to package.json.
+
+## Research source (found in the repo, not invented)
+`antonyjasfer/Budget-Coupled-Robust-Belief-Propagation-for-Visual-Hallucination-Detection`:
+- **Model:** a binary attractive tree. Fields θᵢ+δᵢ, couplings Jᵢⱼ ≥ 0, messages f_J(x)=atanh(tanh J·tanh x), P(h=+1)=σ(2η).
+- **Adversary:** U = {δ : |δᵢ| ≤ εᵢ, Σ|δᵢ| ≤ B}. Monotonicity means the upper bound uses δ ≥ 0 and the lower bound uses δ ≤ 0. Both are solved exactly on a budget grid by max-plus/min-plus convolution (`src/robust_bp/solver.py`).
+- **Root dominance** (`docs/theory/root_dominance.md`): with a small budget the adversary's best move is the root field. The explorable therefore holds the claim's own field fixed and attacks evidence only, and says so.
+- **Current direction:** `src/phase3/shift_validity.py`, whether clean-calibrated conformal hallucination filters stay valid under evidence shift, and whether a shift-calibrated evidence radius restores validity.
+
+## Tasks
+1. **Mobile performance (measure first).**
+   - Trace the cold load under 4x CPU and list the top three main-thread costs.
+   - `src/scene/quality.js`: `pickTier({cores, memory, width, height, dpr, renderer}) -> "high"|"medium"|"low"` plus `TIERS[tier]` settings (detail, antialias, maxDpr, particles, edgeStride, idleFps), unit-tested.
+   - Render on demand: full rate while scrolling, hovering, dragging, touring or assembling. Otherwise idle at `TIERS[tier].idleFps`, and 0 when the tab is hidden or reduced motion is on. Any input wakes it instantly.
+   - `createWatchdog({budgetMs: 22, windowMs: 2000})`: one-way step-down, unit-tested.
+   - Before/after table goes in the final report.
+2. **Research explorable.**
+   - `src/research/rbp.js` (pure): `nominal(tree)` and `robustInterval(tree, {eps, coupled, K}) -> {lower, upper, nominal, witnessLower, witnessUpper}` via budget-grid DP. Tested against brute force on a three-leaf tree.
+   - `src/research/explorable.js` renders the SVG tree. Saffron message particles move leaves → root (the same visual language as the graph). An ε slider, coupled/uncoupled toggle, interval band, and width-vs-ε chart for both modes.
+   - Step buttons and static states for reduced motion.
+3. **About:** first-person paragraph, photo with pointer/scroll depth, 3–4 facts as a typographic list.
+4. **Path:** a line drawn by ScrollTrigger scrub, with entries landing as the line reaches them. Only PATH entries confirmed by repo dates are kept.
+5. **Project route:** `#/project/<id>` detail view with a View Transitions shared element (GSAP fallback), focus management, and Esc/back restoring scroll.
+   **Contact:** GitHub plus TODO fallbacks. The closing motion is the graph settling: particles slow and gather on one node.
+6. **SEO:** meta, canonical from `BASE_URL`, OG/Twitter tags, `public/og.png` from `scripts/og.mjs` (Playwright screenshot of `og.html`), Person JSON-LD, robots.txt, sitemap.xml.
+7. **Verify:** unit tests, e2e (slider, route, reduced motion, no-WebGL), axe-core with 0 serious/critical, 3 breakpoints, 0 console errors, Lighthouse 3 runs each with the median reported, then architecture audit and code review.
+
+## Review focus (Prompt 2)
+1. A deep link straight to `#/project/arbiter` on first load opens the detail view, and Back returns to the tour (e2e).
+2. Dragging the ε slider fast while particles animate never leaves the readout out of sync with the band (the readout is computed from the same result object; e2e reads both).
+3. The watchdog must not step down during the intro assembly or a tab switch (the dt clamp keeps long frames out of the average; unit test).
+4. Idle throttling must not stall Lenis: a scroll event wakes full rate on the same frame (e2e scrolls during idle and checks the tour updates).
+5. TODO contact values must never render as a broken `href` (unit test on `site.js` helpers).
