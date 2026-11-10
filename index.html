@@ -63,26 +63,61 @@
   </section>
 
   <section id="research" data-focus="bp" aria-labelledby="research-title">
-    <div class="panel wipe">
+    <div class="panel research wipe">
       <h2 id="research-title">Research</h2>
       <h3>Budget-Coupled Robust Belief Propagation for Visual Hallucination Detection</h3>
-      <p class="intro">When a vision-language model says "there is a dog in this image", how sure should we be? I model the claim and its visual evidence as a tree-structured graphical model, run exact belief propagation, and let an adversary spend a limited budget corrupting the evidence. The result is a probability interval, not a single score.</p>
-      <div class="demo" id="demo">
-        <svg viewBox="0 0 320 150" aria-hidden="true" id="tree"></svg>
-        <label for="eps">Adversary budget: <output id="epsOut" for="eps" aria-live="off">0.05</output></label>
-        <input id="eps" type="range" min="0" max="0.25" step="0.01" value="0.05">
-        <div class="toggle"><input type="checkbox" id="couple" checked><label for="couple">Share one budget across the whole tree</label></div>
-        <div class="interval" aria-hidden="true"><div class="half"></div><div class="band" id="band"></div></div>
-        <p class="verdict" id="verdict" aria-live="polite"></p>
-        <p class="small">A toy illustration of the idea with made-up numbers, not results from the paper. The red half means "below 50%".</p>
+      <p class="status-line">Paper in progress. Code is public; there are no results yet.</p>
+      <p class="intro">When a vision-language model says "there is a dog in this image", how much should we believe it? I treat the claim and the visual evidence for it as a tree-shaped graphical model and run exact belief propagation. Then I let an adversary corrupt the evidence within a budget, and compute the lowest and highest belief it can force. A claim is only kept if even the lowest value clears the bar.</p>
+
+      <div class="explorable" id="rx" data-mode="shared">
+        <p class="rx-caption">An illustration of the method on a made-up seven-node tree, not results. Saffron dots are messages moving toward the claim. Red rings mark the evidence the adversary corrupts to pull the belief down.</p>
+        <svg id="rx-tree" viewBox="0 0 380 222" role="img" aria-labelledby="rx-tree-title"><title id="rx-tree-title">A claim node fed by two evidence groups, each with two observations</title></svg>
+
+        <div class="rx-controls">
+          <label for="rx-eps">How much each observation can be corrupted, ε = <output id="rx-eps-out" for="rx-eps" aria-live="off">0.50</output></label>
+          <input id="rx-eps" type="range" min="0" max="2" step="0.05" value="0.5">
+          <div class="toggle"><input type="checkbox" id="rx-couple" checked><label for="rx-couple">Share one budget of 2ε across all the evidence</label></div>
+        </div>
+
+        <svg id="rx-band" viewBox="0 0 360 56" aria-hidden="true"></svg>
+        <p class="rx-key"><span class="key-nominal" aria-hidden="true"></span>Belief with clean evidence: <b id="rx-nominal"></b>. The bar marks the range the adversary can reach; the line in the middle is 0.5.</p>
+        <p class="verdict" id="rx-verdict" aria-live="polite"></p>
+
+        <div class="rx-steps" role="group" aria-label="Walk through the messages">
+          <button type="button" class="chip" data-rx-step="prev">Previous step</button>
+          <button type="button" class="chip" data-rx-step="next">Next step</button>
+          <span class="small" id="rx-step-label" aria-live="polite"></span>
+        </div>
+
+        <h4 class="rx-chart-title">How wide the range gets as ε grows</h4>
+        <ul class="legend" aria-label="Lines in the chart">
+          <li><span class="swatch swatch-shared" aria-hidden="true"></span>Shared budget</li>
+          <li><span class="swatch swatch-independent" aria-hidden="true"></span>Independent budgets (each observation can use all of ε)</li>
+        </ul>
+        <div class="rx-chart-wrap">
+          <svg id="rx-chart" viewBox="0 0 360 170" tabindex="0" role="img" aria-label="Line chart of range width against epsilon for shared and independent budgets. Use the left and right arrow keys to read values; the same numbers are in the table below."></svg>
+          <div class="rx-tip" id="rx-tip" hidden>
+            <span data-v="e"></span>
+            <span class="row"><i class="k-shared" aria-hidden="true"></i><b data-v="c"></b> shared</span>
+            <span class="row"><i class="k-independent" aria-hidden="true"></i><b data-v="u"></b> independent</span>
+          </div>
+        </div>
+        <details class="rx-table">
+          <summary>Show the numbers</summary>
+          <table id="rx-table">
+            <thead><tr><th scope="col">ε</th><th scope="col">Range width, shared</th><th scope="col">Range width, independent</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </details>
       </div>
+
+      <h3 class="sub">Where it is now</h3>
       <ul class="facts">
-        <li>Inference engine with exact belief propagation, brute-force verification and robust dynamic programming, implemented and tested.</li>
-        <li>Current direction: a robustness audit of when conformal hallucination guarantees survive distribution shift.</li>
-        <li>Next: evaluation on human-labelled claims. No empirical findings yet.</li>
-        <li>With Dr. S. Raja, Department of Mathematics, Amrita School of Computing.</li>
+        <li>The inference code is written and tested: exact belief propagation, a brute-force check, and the budget-coupled solver.</li>
+        <li>Current question: do conformal hallucination filters calibrated on clean images keep their guarantee when the visual evidence shifts, and does a shift-calibrated evidence radius restore it?</li>
+        <li>Next: evaluation on human-labelled claims.</li>
       </ul>
-      <div class="cta"><a class="btn ghost" data-magnetic href="https://github.com/antonyjasfer/Budget-Coupled-Robust-Belief-Propagation-for-Visual-Hallucination-Detection">Read the code</a></div>
+      <div class="cta"><a class="btn ghost" data-magnetic href="https://github.com/antonyjasfer/Budget-Coupled-Robust-Belief-Propagation-for-Visual-Hallucination-Detection">Read the code on GitHub</a></div>
     </div>
   </section>
 

@@ -16,7 +16,8 @@ import { initTour } from "./motion/tour.js";
 import { initSectionFocus, initWipes } from "./motion/sections.js";
 import { initMagnetic, initCursor } from "./motion/pointer.js";
 import { initProjectsList } from "./ui/projects-list.js";
-import { initResearchDemo, initPath } from "./ui/research-demo.js";
+import { initPath } from "./ui/path.js";
+import { initExplorable } from "./research/explorable.js";
 
 gsap.registerPlugin(ScrollTrigger);
 ScrollTrigger.config({ ignoreMobileResize: true });
@@ -81,7 +82,7 @@ await yieldTask();
 // ---- below-the-fold content ----
 renderTourPanels(FEATURED);
 initPath(PATH);
-initResearchDemo();
+const explorable = initExplorable($("#rx"), { reduced, tokens });
 const list = initProjectsList({ projects: PROJECTS, graph, focus });
 await yieldTask();
 

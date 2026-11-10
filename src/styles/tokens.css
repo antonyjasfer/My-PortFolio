@@ -36,6 +36,10 @@
   --saffron: #E8A317;      /* marks and particles; never text on paper */
   --signal: #D7263D;       /* non-text flag marks */
   --signal-text: #B5172C;  /* signal as text (5.93:1) */
+  /* chart series (validated with the dataviz palette checks against --paper):
+     blue for the shared budget, saffron (dashed, direct-labelled) for independent */
+  --series-shared: #3D5FA8;
+  --series-independent: var(--saffron);
   --rule: rgba(22, 33, 62, .14);
   --veil: rgba(238, 241, 245, .9);
 
