@@ -231,3 +231,19 @@ setPaused(bool) · onPick(cb) · dispose()
 ### Task 10: Verification and review
 - [ ] `npm test`, `npm run build` (record the gzip sizes), Playwright screenshots of hero, projects and research at 1440×900 and 390×844 into `docs/screenshots/`, and console messages are empty.
 - [ ] `ecc:code-reviewer` on the full diff, fixing every blocking issue. Commit.
+
+---
+
+## Status after Prompt 1 (2026-11-10)
+
+- Built: tasks 1–10. `npm test` passes 20/20, `npm run build` passes, and `npm run e2e` passes 20/20 against `vite preview`.
+- Lighthouse 12.8.2 (CLI, headless Chromium with SwiftShader software GL):
+  - Mobile: Performance 72–82 across runs (median about 75), Accessibility 100, Best Practices 100, SEO 100.
+  - Desktop: Performance 96, Accessibility 100, Best Practices 100, SEO 100.
+  - Mobile with WebGL disabled: Performance 93.
+  - **The mobile target of 85 is not met in this lab.** The remaining Total Blocking Time is the WebGL frames, rasterised on the CPU by SwiftShader. Page script alone costs about 20 ms of TBT.
+- Deviations from the plan:
+  - Lede and meta no longer animate, so they can paint as the LCP before any script runs.
+  - The scene loads on idle after `load`. On slow devices the graph assembly can follow the headline instead of running exactly with it.
+  - `--slate` is darkened to `#4E5D73` for AA over translucent panels.
+- Prompt 2: About, the research demo (still v1's toy), Timeline/Path design, Contact.
