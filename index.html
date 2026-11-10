@@ -1,517 +1,181 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Antony Selva Jasfer: AI systems that show their evidence</title>
-<meta name="description" content="Portfolio of A. Antony Selva Jasfer, B.Tech Artificial Intelligence and Data Science student at Amrita Vishwa Vidyapeetham. Research, hackathon builds and open source.">
+<meta name="description" content="Antony Selva Jasfer, B.Tech AI and Data Science student at Amrita Vishwa Vidyapeetham: robust belief propagation research and 18 projects with code.">
+<meta name="theme-color" content="#EEF1F5">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ccircle cx=%2716%27 cy=%2716%27 r=%2712%27 fill=%27%2316213E%27/%3E%3Ccircle cx=%2724%27 cy=%278%27 r=%275%27 fill=%27%23E8A317%27/%3E%3C/svg%3E">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<style>
-:root{
-  --paper:#EEF1F5; --paper-2:#E2E7EE; --ink:#16213E; --slate:#5B6B82;
-  --saffron:#E8A317; --signal:#D7263D; --rule:rgba(22,33,62,.14);
-  --display:"Bricolage Grotesque", system-ui, sans-serif;
-  --body:"IBM Plex Sans", system-ui, sans-serif;
-  --col:min(560px, 44vw);
-}
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 var(--body);-webkit-font-smoothing:antialiased;
-  background-image:linear-gradient(var(--rule) 1px,transparent 1px),linear-gradient(90deg,var(--rule) 1px,transparent 1px);
-  background-size:48px 48px;background-attachment:fixed}
-a{color:inherit}
-:focus-visible{outline:3px solid var(--saffron);outline-offset:3px;border-radius:4px}
-#graph{position:fixed;inset:0;width:100vw;height:100vh;display:block;touch-action:pan-y;cursor:grab}
-#graph.dragging{cursor:grabbing}
-#labels{position:fixed;inset:0;pointer-events:none;z-index:1}
-.nlabel{position:absolute;left:0;top:0;font:500 13px/1.2 var(--body);color:var(--ink);white-space:nowrap;
-  padding:2px 7px;border-radius:999px;background:rgba(238,241,245,.82);will-change:transform,opacity}
-.nlabel.skill{font-size:12px;color:var(--slate);background:transparent}
-
-header.top{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;
-  padding:18px clamp(18px,4vw,48px);pointer-events:none}
-header.top > *{pointer-events:auto}
-.mark{font:700 20px/1 var(--display);text-decoration:none;letter-spacing:-.01em}
-nav.top a{margin-left:22px;text-decoration:none;font-weight:500;font-size:15px;color:var(--slate)}
-nav.top a:hover,nav.top a[aria-current="true"]{color:var(--ink)}
-
-main{position:relative;z-index:2;pointer-events:none}
-section{min-height:100vh;padding:120px clamp(18px,4vw,48px) 80px}
-.panel{pointer-events:auto;margin-left:auto;width:var(--col);background:rgba(238,241,245,.9);
-  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid var(--rule);border-radius:18px;padding:34px 34px 30px}
-
-#top{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:9vh}
-.hero{pointer-events:auto;max-width:780px}
-.hero h1{font:800 clamp(52px,9.4vw,138px)/.88 var(--display);letter-spacing:-.035em;margin:0 0 26px;font-variation-settings:"opsz" 96}
-.hero h1 span{display:block}
-.hero p.lede{font:400 clamp(20px,2.1vw,27px)/1.35 var(--display);max-width:30ch;margin:0 0 14px}
-.hero p.meta{color:var(--slate);margin:0 0 24px;max-width:48ch}
-.hint{display:inline-flex;gap:10px;align-items:center;font-size:14px;color:var(--slate)}
-.hint i{flex:none;width:10px;height:10px;border-radius:50%;background:var(--saffron);box-shadow:0 0 0 5px rgba(232,163,23,.2)}
-
-h2{font:700 clamp(34px,4vw,52px)/1 var(--display);letter-spacing:-.025em;margin:0 0 14px}
-h3{font:650 22px/1.2 var(--display);margin:0 0 4px;letter-spacing:-.01em}
-.intro{color:var(--slate);margin:0 0 24px;max-width:46ch}
-
-.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}
-.chip{font:500 14px/1 var(--body);border:1px solid var(--rule);background:var(--paper);color:var(--ink);
-  padding:8px 12px;border-radius:999px;cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.plist{list-style:none;margin:0;padding:0}
-.plist li{border-top:1px solid var(--rule)}
-.plist li[hidden]{display:none}
-.plist button{all:unset;box-sizing:border-box;display:grid;grid-template-columns:1fr auto;gap:2px 16px;width:100%;padding:14px 4px;cursor:pointer}
-.plist button:focus-visible{outline:3px solid var(--saffron)}
-.plist .pt{font:600 18px/1.25 var(--display)}
-.plist .pw{color:var(--slate);font-size:14px;grid-column:1}
-.plist .open{grid-row:1/3;grid-column:2;align-self:center;font-size:14px;color:var(--slate)}
-.plist button:hover .pt{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px;text-decoration-color:var(--saffron)}
-
-.demo{margin:22px 0 6px;padding:18px;border-radius:14px;background:var(--paper-2)}
-.demo svg{width:100%;height:auto;display:block}
-.demo label{display:block;font-weight:500;font-size:15px;margin:12px 0 6px}
-.demo input[type=range]{width:100%;accent-color:var(--ink)}
-.toggle{display:flex;gap:10px;align-items:center;margin-top:10px;font-size:15px}
-.toggle input{width:18px;height:18px;accent-color:var(--ink)}
-.interval{position:relative;height:30px;margin:16px 0 8px;border-radius:8px;background:linear-gradient(90deg,rgba(215,38,61,.18) 0 50%,rgba(22,33,62,.06) 50% 100%)}
-.interval .band{position:absolute;top:5px;bottom:5px;border-radius:6px;background:var(--saffron);transition:left .25s,width .25s}
-.interval .half{position:absolute;left:50%;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
-.verdict{font:600 17px/1.3 var(--display)}
-.verdict.flag{color:var(--signal)}
-.small{font-size:14px;color:var(--slate)}
-.facts{margin:18px 0 0;padding:0;list-style:none}
-.facts li{padding:8px 0;border-top:1px solid var(--rule);font-size:15px}
-
-ol.path{list-style:none;margin:0;padding:0}
-ol.path li{display:grid;grid-template-columns:86px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--rule)}
-ol.path time{color:var(--slate);font-size:14px;padding-top:2px}
-ol.path b{font:600 17px/1.3 var(--display);display:block}
-ol.path span{font-size:15px;color:var(--slate)}
-
-.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
-.btn{display:inline-block;text-decoration:none;font-weight:600;padding:13px 20px;border-radius:999px;background:var(--ink);color:var(--paper)}
-.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
-footer{pointer-events:auto;padding:20px clamp(18px,4vw,48px) 40px;color:var(--slate);font-size:14px;text-align:right}
-
-#detail{position:fixed;z-index:6;left:clamp(14px,3vw,40px);bottom:clamp(14px,3vw,40px);width:min(430px,calc(100vw - 28px));
-  background:var(--paper);border:1px solid var(--ink);border-radius:18px;padding:26px 26px 22px;box-shadow:8px 8px 0 var(--ink);
-  transform:translateY(16px);opacity:0;visibility:hidden;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s,visibility 0s .28s}
-#detail.open{transform:none;opacity:1;visibility:visible;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .2s}
-#detail h3{padding-right:40px}
-#detail .where{color:var(--slate);font-size:14px;margin:0 0 12px}
-#detail p{margin:0 0 12px;font-size:16px}
-#detail .status{font-size:14px;border-left:3px solid var(--saffron);padding-left:10px}
-#detail .stack{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 16px}
-#detail .stack span{font-size:13px;border:1px solid var(--rule);border-radius:999px;padding:3px 9px}
-#detail .links a{font-weight:600;margin-right:16px}
-#detail .x{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;border:1px solid var(--rule);background:var(--paper);font-size:20px;line-height:1;cursor:pointer;color:var(--ink)}
-#tip{position:fixed;z-index:4;pointer-events:none;font:500 13px/1 var(--body);background:var(--ink);color:var(--paper);padding:7px 10px;border-radius:8px;opacity:0;transition:opacity .12s}
-.nogl #graph{display:none}
-
-@media (max-width:860px){
-  :root{--col:100%}
-  section{padding:96px 16px 56px}
-  .panel{padding:24px 20px;background:rgba(238,241,245,.95)}
-  header.top{background:linear-gradient(rgba(238,241,245,.96) 70%,rgba(238,241,245,0))}
-  nav.top a{margin-left:14px;font-size:14px}
-  nav.top a.hide-s{display:none}
-  #top{padding-bottom:7vh}
-  .hero{margin:0 -16px;padding:56px 16px 8px;background:linear-gradient(rgba(238,241,245,0),rgba(238,241,245,.94) 64px)}
-  .nlabel.skill{display:none}
-}
-</style>
+<link rel="preload" href="/fonts/bricolage-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  // Mark JS + motion state before first paint so the intro can hide what it will reveal.
+  (function (d) {
+    d.classList.add("js");
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) d.classList.add("motion");
+  })(document.documentElement);
+</script>
 </head>
 <body>
-<canvas id="graph" aria-label="Interactive 3D graph of Antony's projects and the skills they use. Drag to rotate, select a project node to read about it." role="img"></canvas>
+<a class="skip" href="#main">Skip to content</a>
+
+<canvas id="graph" aria-hidden="true"></canvas>
+<img id="graph-fallback" src="/graph-fallback.svg" alt="" hidden>
 <div id="labels" aria-hidden="true"></div>
 <div id="tip" aria-hidden="true"></div>
 
 <header class="top">
-  <a class="mark" href="#top">Antony</a>
-  <nav class="top" aria-label="Sections">
-    <a href="#work">Work</a><a href="#research">Research</a><a href="#path" class="hide-s">Path</a><a href="#contact">Contact</a>
+  <a class="mark" href="#top" data-magnetic>Antony</a>
+  <nav class="top-nav" aria-label="Sections">
+    <a href="#work" data-magnetic>Work</a>
+    <a href="#research" data-magnetic>Research</a>
+    <a href="#path" class="hide-s" data-magnetic>Path</a>
+    <a href="#contact" data-magnetic>Contact</a>
   </nav>
 </header>
 
-<main>
-  <section id="top" data-focus="all">
+<main id="main" tabindex="-1">
+  <section id="top" class="hero-section" data-focus="all" aria-labelledby="hero-title">
     <div class="hero">
-      <h1><span>Antony</span><span>Selva Jasfer</span></h1>
+      <h1 id="hero-title" class="hero-title"><span>Antony</span> <span>Selva Jasfer</span></h1>
       <p class="lede">I build AI systems that show their evidence before they ask to be trusted.</p>
       <p class="meta">B.Tech Artificial Intelligence and Data Science at Amrita Vishwa Vidyapeetham, Nagercoil. Probabilistic models, agents, and a lot of hackathons.</p>
-      <span class="hint"><i></i>The graph behind this text is my work. Drag it, or select a dark node to open a project.</span>
+      <p class="hint"><i aria-hidden="true"></i>The graph behind this text is my work: dark nodes are projects, light ones are the tools they use.</p>
     </div>
   </section>
 
-  <section id="work" data-focus="all">
-    <div class="panel">
-      <h2>Work</h2>
-      <p class="intro">Each project is a dark node, each tool a light one. Pick a skill to see where I've used it.</p>
+  <section id="work" data-focus="projects" aria-labelledby="work-title">
+    <div class="section-head wipe">
+      <h2 id="work-title">Work</h2>
+      <p class="intro">Six builds, in the order the graph connects them. Scroll and the camera follows the skills they share.</p>
+    </div>
+    <div class="tour" id="tour">
+      <ol class="tour-panels" id="tour-panels" role="list" aria-label="Featured projects"></ol>
+      <p class="tour-count" id="tour-count" aria-hidden="true"></p>
+    </div>
+    <div class="panel all-projects wipe">
+      <h3 class="list-title">Everything, by skill</h3>
+      <p class="intro">Pick a skill to see where I've used it.</p>
       <div class="chips" role="group" aria-label="Filter projects by skill" id="chips"></div>
-      <ul class="plist" id="plist"></ul>
+      <ul class="plist" id="plist" role="list"></ul>
+      <p class="sr-only" role="status" id="plist-status"></p>
     </div>
   </section>
 
-  <section id="research" data-focus="bp">
-    <div class="panel">
-      <h2>Research</h2>
+  <section id="research" data-focus="bp" aria-labelledby="research-title">
+    <div class="panel research wipe">
+      <h2 id="research-title">Research</h2>
       <h3>Budget-Coupled Robust Belief Propagation for Visual Hallucination Detection</h3>
-      <p class="intro" style="margin-top:10px">When a vision-language model says "there is a dog in this image", how sure should we be? I model the claim and its visual evidence as a tree-structured graphical model, run exact belief propagation, and let an adversary spend a limited budget corrupting the evidence. The result is a probability interval, not a single score.</p>
-      <div class="demo" id="demo">
-        <svg viewBox="0 0 320 150" aria-hidden="true" id="tree"></svg>
-        <label for="eps">Adversary budget: <output id="epsOut">0.05</output></label>
-        <input id="eps" type="range" min="0" max="0.25" step="0.01" value="0.05">
-        <div class="toggle"><input type="checkbox" id="couple" checked><label for="couple" style="margin:0">Share one budget across the whole tree</label></div>
-        <div class="interval" aria-hidden="true"><div class="half"></div><div class="band" id="band"></div></div>
-        <div class="verdict" id="verdict" aria-live="polite"></div>
-        <p class="small" style="margin:8px 0 0">A toy illustration of the idea with made-up numbers, not results from the paper. The red half means "below 50%".</p>
+      <p class="status-line">Paper in progress. Code is public; there are no results yet.</p>
+      <p class="intro">When a vision-language model says "there is a dog in this image", how much should we believe it? I treat the claim and the visual evidence for it as a tree-shaped graphical model and run exact belief propagation. Then I let an adversary corrupt the evidence within a budget, and compute the lowest and highest belief it can force. A claim is only kept if even the lowest value clears the bar.</p>
+
+      <div class="explorable" id="rx" data-mode="shared">
+        <p class="rx-caption">An illustration of the method on a made-up seven-node tree, not results. Saffron dots are messages moving toward the claim. Red rings mark the evidence the adversary corrupts to pull the belief down.</p>
+        <svg id="rx-tree" viewBox="0 0 380 222" role="img" aria-labelledby="rx-tree-title"><title id="rx-tree-title">A claim node fed by two evidence groups, each with two observations</title></svg>
+
+        <div class="rx-controls">
+          <label for="rx-eps">How much each observation can be corrupted, ε = <output id="rx-eps-out" for="rx-eps" aria-live="off">0.50</output></label>
+          <input id="rx-eps" type="range" min="0" max="2" step="0.05" value="0.5">
+          <div class="toggle"><input type="checkbox" id="rx-couple" checked><label for="rx-couple">Share one budget of 2ε across all the evidence</label></div>
+        </div>
+
+        <svg id="rx-band" viewBox="0 0 360 56" aria-hidden="true"></svg>
+        <p class="rx-key"><span class="key-nominal" aria-hidden="true"></span>Belief with clean evidence: <b id="rx-nominal"></b>. The bar marks the range the adversary can reach; the line in the middle is 0.5.</p>
+        <p class="verdict" id="rx-verdict" aria-live="polite"></p>
+
+        <div class="rx-steps" role="group" aria-label="Walk through the messages">
+          <button type="button" class="chip" data-rx-step="prev">Previous step</button>
+          <button type="button" class="chip" data-rx-step="next">Next step</button>
+          <span class="small" id="rx-step-label" aria-live="polite"></span>
+        </div>
+
+        <h4 class="rx-chart-title">How wide the range gets as ε grows</h4>
+        <ul class="legend" aria-label="Lines in the chart">
+          <li><span class="swatch swatch-shared" aria-hidden="true"></span>Shared budget</li>
+          <li><span class="swatch swatch-independent" aria-hidden="true"></span>Independent budgets (each observation can use all of ε)</li>
+        </ul>
+        <div class="rx-chart-wrap">
+          <svg id="rx-chart" viewBox="0 0 360 170" tabindex="0" role="img" aria-label="Line chart of range width against epsilon for shared and independent budgets. Use the left and right arrow keys to read values; the same numbers are in the table below."></svg>
+          <div class="rx-tip" id="rx-tip" hidden>
+            <span data-v="e"></span>
+            <span class="row"><i class="k-shared" aria-hidden="true"></i><b data-v="c"></b> shared</span>
+            <span class="row"><i class="k-independent" aria-hidden="true"></i><b data-v="u"></b> independent</span>
+          </div>
+        </div>
+        <details class="rx-table">
+          <summary>Show the numbers</summary>
+          <table id="rx-table">
+            <thead><tr><th scope="col">ε</th><th scope="col">Range width, shared</th><th scope="col">Range width, independent</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </details>
       </div>
+
+      <h3 class="sub">Where it is now</h3>
       <ul class="facts">
-        <li>Inference engine with exact belief propagation, brute-force verification and robust dynamic programming, implemented and tested.</li>
-        <li>Current direction: a robustness audit of when conformal hallucination guarantees survive distribution shift.</li>
-        <li>Next: evaluation on human-labelled claims. No empirical findings yet.</li>
-        <li>With Dr. S. Raja, Department of Mathematics, Amrita School of Computing.</li>
+        <li>The inference code is written and tested: exact belief propagation, a brute-force check, and the budget-coupled solver.</li>
+        <li>Current question: do conformal hallucination filters calibrated on clean images keep their guarantee when the visual evidence shifts, and does a shift-calibrated evidence radius restore it?</li>
+        <li>Next: evaluation on human-labelled claims.</li>
       </ul>
-      <div class="cta"><a class="btn ghost" href="https://github.com/antonyjasfer/Budget-Coupled-Robust-Belief-Propagation-for-Visual-Hallucination-Detection">Read the code</a></div>
+      <div class="cta"><a class="btn ghost" data-magnetic href="https://github.com/antonyjasfer/Budget-Coupled-Robust-Belief-Propagation-for-Visual-Hallucination-Detection">Read the code on GitHub</a></div>
     </div>
   </section>
 
-  <section id="path" data-focus="projects">
-    <div class="panel">
-      <h2>Path</h2>
-      <p class="intro">What I've been building, newest first.</p>
-      <ol class="path" id="pathlist"></ol>
-    </div>
-  </section>
-
-  <section id="contact" data-focus="all">
-    <div class="panel">
-      <h2>Let's build something checkable</h2>
-      <p class="intro">I'm looking for internships and research collaborations in trustworthy AI, agents and applied ML. Hackathon teams welcome too.</p>
-      <div class="cta">
-        <a class="btn" href="https://github.com/antonyjasfer">GitHub</a>
-        <!-- LINKEDIN: add <a class="btn ghost" href="YOUR_LINKEDIN_URL">LinkedIn</a> -->
+  <section id="about" data-focus="all" aria-labelledby="about-title">
+    <div class="about wipe">
+      <figure class="portrait" id="portrait">
+        <span class="portrait-plate" aria-hidden="true"></span>
+        <picture class="portrait-photo">
+          <source type="image/webp" srcset="/me-400.webp 400w, /me-720.webp 720w" sizes="(max-width: 860px) 60vw, 300px">
+          <img src="/me.jpg" width="720" height="720" alt="Antony Selva Jasfer" loading="lazy" decoding="async">
+        </picture>
+        <span class="portrait-dot" aria-hidden="true"></span>
+      </figure>
+      <div class="about-text">
+        <h2 id="about-title">About</h2>
+        <p class="about-lede" id="about-lede"></p>
+        <dl class="about-facts" id="about-facts"></dl>
       </div>
     </div>
   </section>
-  <footer>Built with Three.js. The graph is drawn live in your browser.</footer>
+
+  <section id="path" data-focus="projects" aria-labelledby="path-title">
+    <div class="timeline-wrap">
+      <div class="section-head">
+        <h2 id="path-title">Path</h2>
+        <p class="intro">What I've built, newest first.</p>
+      </div>
+      <div class="timeline" id="timeline">
+        <span class="timeline-line" aria-hidden="true"><span class="timeline-fill"></span></span>
+        <ol class="path" id="pathlist"></ol>
+      </div>
+    </div>
+  </section>
+
+  <section id="contact" data-focus="all" aria-labelledby="contact-title">
+    <div class="contact wipe">
+      <h2 id="contact-title">Let's build something you can check</h2>
+      <p class="intro">I'm looking for internships and research collaborations in trustworthy AI, agents and applied ML. Hackathon teams are welcome too.</p>
+      <ul class="contact-links" id="contact-links"></ul>
+    </div>
+  </section>
 </main>
 
-<aside id="detail" role="dialog" aria-modal="false" aria-labelledby="dTitle">
-  <button class="x" id="dClose" aria-label="Close project">×</button>
-  <h3 id="dTitle"></h3>
-  <p class="where" id="dWhere"></p>
-  <p id="dDesc"></p>
-  <p class="status" id="dStatus"></p>
-  <div class="stack" id="dStack"></div>
-  <div class="links" id="dLinks"></div>
-</aside>
+<footer class="foot">Built with Three.js and GSAP. The graph is drawn live in your browser.</footer>
 
-<script>
-window.PROJECTS = [
- {id:"arbiter",t:"Arbiter",w:"PayPal AI Hackathon, Nov 2026",repo:"arbiter",
-  d:"Freelance work gets paid when evidence shows it was delivered. AI turns a client's brief into milestones with testable acceptance criteria, checks run on a fresh GitHub Actions runner with no secrets, and payment moves only after the client approves. The AI can never move money.",
-  s:"Agreements phase working with a two-click demo; verification and payments in progress. PayPal sandbox only.",
-  k:["TypeScript","React","PayPal API","GitHub Actions","Playwright","LLM agents"]},
- {id:"bp",t:"Robust Belief Propagation",w:"Research with Dr. S. Raja, 2026",repo:"Budget-Coupled-Robust-Belief-Propagation-for-Visual-Hallucination-Detection",
-  d:"Probability intervals for vision-language model claims, from exact belief propagation and an adversary with a limited budget over tree graphical models.",
-  s:"Inference engine built and tested. Evaluation on human-labelled claims is next.",
-  k:["Python","Probabilistic models","PyTorch","VLMs"]},
- {id:"visca",t:"VISCA BARCA",w:"More Than a Hack 2027, Barça Innovation Hub",repo:"VISCA-BARCA-mtah2027",
-  d:"A possession label for every frame of FC Barcelona vs Athletic Club from automatic tracking, with no training and no hand labels: control events from player and ball co-movement, decoded with a three-state Viterbi.",
-  s:"Phase 1 entry with a technical report.",k:["Python","Sports analytics","Probabilistic models"]},
- {id:"ledgerguard",t:"LedgerGuard",w:"Amazon Developer Hackathon, Alexa+ track",repo:"ledgerguard",
-  d:"A voice accounts-payable agent for Alexa+ and Amazon Bedrock that checks invoice maths and duplicate payments, with an Argon2 audit vault and a streamable HTTP MCP server.",
-  s:"Hackathon build.",k:["Python","AWS Bedrock","MCP","LLM agents"]},
- {id:"preflight",t:"strands-bedrock-preflight",w:"Open-source Python package",repo:"strands-bedrock-preflight",
-  d:"A small MIT-licensed utility that catches Bedrock model-access errors before a Strands agent fails at runtime.",
-  s:"Open source with unit tests.",k:["Python","AWS Bedrock","Open source"]},
- {id:"papertrail",t:"PaperTrail AI",w:"All Things Agentic Hackathon 2026",repo:"papertrail",
-  d:"An agent that extracts, forensically checks and seals financial documents, giving deterministic answers instead of guessed invoice numbers.",
-  s:"Hackathon build.",k:["Python","FastAPI","Gemini","LLM agents"]},
- {id:"legallens",t:"LegalLens",w:"AI for Legal Assistance challenge",repo:"legallens",
-  d:"Reads contracts and links every claim to the page and clause it came from. With no evidence, it says so instead of answering confidently, and it points out what the document leaves out.",
-  s:"Challenge build.",k:["Python","RAG","Gemini"]},
- {id:"clairs",t:"CLAIRS",w:"OpenEnv reinforcement learning environment",repo:"CLAIRS-Autonomous-Defense",
-  d:"An environment where an LLM agent defends an IoT network from DDoS attacks, with a traffic simulator that reacts to each block or rate-limit decision.",
-  s:"Hackathon build.",k:["Python","Reinforcement learning","LLM agents"]},
- {id:"nexus",t:"NEXUS",w:"AMD Developer Hackathon 2026",repo:"nexus-ct-match",
-  d:"Three LangGraph agents match patients to clinical trials with explainable reasoning, running Llama 3.1 70B on vLLM on an AMD MI300X.",
-  s:"Hackathon build.",k:["Python","LangGraph","vLLM","LLM agents"]},
- {id:"stadiumiq",t:"StadiumIQ",w:"FIFA World Cup 2026 fan assistant",repo:"StadiumIQ",
-  d:"Chat, navigation and crowd alerts for fans at MetLife Stadium, built on Next.js and Cloud Run with NVIDIA NIM and Firestore.",
-  s:"Hackathon build.",k:["TypeScript","Next.js","Cloud Run","Firestore"]},
- {id:"lumina",t:"Lumina",w:"Stadium concierge for Chepauk",repo:"lumina-chepauk",live:"https://lumina-chepauk.vercel.app",
-  d:"Simulates crowd telemetry for 23 stands at M.A. Chidambaram Stadium and has Gemini route IPL fans away from crowded stalls.",
-  s:"Live demo online.",k:["JavaScript","React","Gemini"]},
- {id:"vote",t:"VOTE",w:"PromptWars Challenge 2",repo:"vote-assistant",
-  d:"Walks Indian voters through the election process with a seven-phase timeline and Gemini answers. 203 tests, built to WCAG 2.1 AA.",
-  s:"Challenge build.",k:["React","Gemini","Cloud Run"]},
- {id:"gsoc",t:"Quantum circuits with LLMs",w:"GSoC 2026 evaluation tasks, ML4SCI",repo:"GSOC-2026-ML4SCI-Tasks",
-  d:"A PyTorch CNN baseline, PennyLane quantum circuits and Gemini working together in one evaluation notebook.",
-  s:"Application tasks completed.",k:["Python","PyTorch","PennyLane","Gemini"]},
- {id:"f1",t:"F1-Strategy-Net",w:"Personal project",repo:"F1-Strategy-Net",
-  d:"LSTM and gradient boosting on Formula 1 telemetry to estimate tyre life and pit-stop windows.",
-  s:"Notebook project.",k:["Python","TensorFlow","Sports analytics"]},
- {id:"nba",t:"NBA Accreditation Assistant",w:"IBM watsonx.ai",repo:"NBA-Accreditation-Assistant-RAG",
-  d:"A retrieval-augmented assistant that answers faculty questions from official NBA accreditation documents, with sources.",
-  s:"Course project.",k:["RAG","watsonx"]},
- {id:"swynex",t:"SWYNEX cloud internship",w:"SWYNEX Technologies, 2026",repo:"SWYNEX-Final-Cloud-Deployment",live:"https://antonyjasfer.github.io/SWYNEX-Final-Cloud-Deployment/",
-  d:"Four tasks: a cloud architecture outline, a GitHub Pages deployment, monitoring and cost notes, and a final case study tying them together.",
-  s:"Internship tasks submitted.",k:["Cloud","GitHub Actions"]},
- {id:"arenapulse",t:"ArenaPulse",w:"Real-time sports media platform",repo:"arenapulse",
-  d:"Live tactical data over Socket.io with an Express and Prisma API and a React front end animated with GSAP.",
-  s:"Side project.",k:["TypeScript","React","Node.js"]},
- {id:"ecotrack",t:"EcoTrack",w:"Carbon footprint tracker",repo:"Carbon-Footprint-Awareness-Platform",
-  d:"Tracks daily CO₂ with Chart.js dashboards and a canvas world that grows or wilts with your score.",
-  s:"Side project.",k:["JavaScript"]}
-];
-window.PATH = [
- ["Nov 2026","Arbiter","PayPal AI Hackathon on Devpost"],
- ["Nov 2026","SWYNEX Technologies","Cloud internship, four tasks"],
- ["Nov 2026","VISCA BARCA","More Than a Hack 2027, Phase 1"],
- ["Oct 2026","Belief propagation research","Inference engine and paper direction"],
- ["Oct 2026","LedgerGuard and PaperTrail","Amazon Alexa+ and All Things Agentic hackathons"],
- ["Sep 2026","LegalLens","Evidence-first legal reader"],
- ["Aug 2026","CLAIRS","RL environment for IoT defense"],
- ["Jul 2026","StadiumIQ","FIFA World Cup 2026 assistant"],
- ["May 2026","NEXUS and VOTE","AMD hackathon and PromptWars"],
- ["Apr 2026","Lumina","IPL stadium concierge"],
- ["Mar 2026","GSoC ML4SCI tasks","Quantum circuit design with LLMs"]
-];
-</script>
+<div class="project-view" id="project-view" role="dialog" aria-modal="true" aria-labelledby="pv-title" tabindex="-1" data-lenis-prevent hidden>
+  <article class="pv-inner">
+    <button class="pv-back" id="pv-back" type="button">Back to the projects</button>
+    <h2 class="pv-title" id="pv-title" tabindex="-1"></h2>
+    <p class="pv-where" id="pv-where"></p>
+    <p class="pv-desc" id="pv-desc"></p>
+    <p class="pv-status" id="pv-status"></p>
+    <h2 class="pv-sub">Built with</h2>
+    <ul class="pv-skills" id="pv-skills"></ul>
+    <p class="pv-links" id="pv-links"></p>
+  </article>
+</div>
 
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script>
-<script type="module">
-import * as THREE from "three";
-const P = window.PROJECTS, reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-const $ = s => document.querySelector(s);
-
-/* ---------- DOM first, so the page works even without WebGL ---------- */
-const G = { focusSkill(){}, focusProject(){}, clear(){}, projectsOnly(){} };
-let chip=null, secFocus="all";
-function restore(){ if(chip) return G.focusSkill(chip); if(secFocus==="bp") return G.focusProject("bp"); if(secFocus==="projects") return G.projectsOnly(); G.clear(); }
-
-const plist=$("#plist"), chips=$("#chips");
-P.forEach(p=>{ const li=document.createElement("li"); li.dataset.k=p.k.join("|");
-  li.innerHTML=`<button type="button" aria-haspopup="dialog"><span class="pt"></span><span class="pw"></span><span class="open">Open</span></button>`;
-  li.querySelector(".pt").textContent=p.t; li.querySelector(".pw").textContent=p.w;
-  const b=li.querySelector("button");
-  b.addEventListener("click",()=>openDet(p.id,b));
-  b.addEventListener("mouseenter",()=>{ if(!det.classList.contains("open")) G.focusProject(p.id); });
-  b.addEventListener("mouseleave",()=>{ if(!det.classList.contains("open")) restore(); });
-  plist.appendChild(li); });
-const counts={}; P.forEach(p=>p.k.forEach(k=>counts[k]=(counts[k]||0)+1));
-const topSkills=Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).slice(0,10);
-["All",...topSkills].forEach(k=>{ const c=document.createElement("button"); c.type="button"; c.className="chip"; c.textContent=k;
-  c.setAttribute("aria-pressed",String(k==="All")); c.addEventListener("click",()=>selectChip(k==="All"?null:k)); chips.appendChild(c); });
-function selectChip(k){
-  chip=k;
-  chips.querySelectorAll(".chip").forEach(x=>x.setAttribute("aria-pressed",String(x.textContent===(k||"All"))));
-  plist.querySelectorAll("li").forEach(li=>li.hidden = !!k && !li.dataset.k.split("|").includes(k));
-  restore();
-}
-
-const det=$("#detail"); let opener=null;
-function openDet(id,from){ const p=P.find(x=>x.id===id); if(!p) return; opener=from||null;
-  $("#dTitle").textContent=p.t; $("#dWhere").textContent=p.w; $("#dDesc").textContent=p.d; $("#dStatus").textContent=p.s;
-  const st=$("#dStack"); st.innerHTML=""; p.k.forEach(k=>{const s=document.createElement("span"); s.textContent=k; st.appendChild(s);});
-  const L=$("#dLinks"); L.innerHTML="";
-  const a=document.createElement("a"); a.href="https://github.com/antonyjasfer/"+p.repo; a.textContent="Code on GitHub"; L.appendChild(a);
-  if(p.live){ const b=document.createElement("a"); b.href=p.live; b.textContent="Live site"; L.appendChild(b); }
-  det.classList.add("open"); G.focusProject(id); $("#dClose").focus({preventScroll:true}); }
-function closeDet(){ det.classList.remove("open"); restore(); if(opener) opener.focus({preventScroll:true}); opener=null; }
-$("#dClose").addEventListener("click",closeDet);
-addEventListener("keydown",e=>{ if(e.key==="Escape"&&det.classList.contains("open")) closeDet(); });
-
-const pl=$("#pathlist"); window.PATH.forEach(([d,t,s])=>{ const li=document.createElement("li");
-  li.innerHTML="<time></time><div><b></b><span></span></div>"; li.querySelector("time").textContent=d;
-  li.querySelector("b").textContent=t; li.querySelector("span").textContent=s; pl.appendChild(li); });
-
-/* research toy demo */
-const tree=$("#tree"), NS="http://www.w3.org/2000/svg";
-const tn=[[160,22],[90,72],[230,72],[50,125],[130,125],[190,125],[270,125]], te=[[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]];
-te.forEach(([a,b])=>{ const l=document.createElementNS(NS,"line"); l.setAttribute("x1",tn[a][0]);l.setAttribute("y1",tn[a][1]);
-  l.setAttribute("x2",tn[b][0]);l.setAttribute("y2",tn[b][1]); l.setAttribute("stroke","#5B6B82"); l.setAttribute("stroke-width","1.5"); tree.appendChild(l); });
-const circ=tn.map(([x,y],i)=>{ const c=document.createElementNS(NS,"circle"); c.setAttribute("cx",x);c.setAttribute("cy",y);c.setAttribute("r",i?11:15);
-  c.setAttribute("fill",i?"#5B6B82":"#16213E"); c.style.transition="fill .25s"; tree.appendChild(c); return c; });
-const rt=document.createElementNS(NS,"text"); rt.setAttribute("x",182);rt.setAttribute("y",26);rt.setAttribute("font-size","12");rt.setAttribute("fill","#16213E");
-rt.setAttribute("font-family","IBM Plex Sans");rt.textContent="claim: there is a dog"; tree.appendChild(rt);
-const lt=document.createElementNS(NS,"text"); lt.setAttribute("x",8);lt.setAttribute("y",148);lt.setAttribute("font-size","10");lt.setAttribute("fill","#5B6B82");
-lt.setAttribute("font-family","IBM Plex Sans");lt.textContent="leaves: visual evidence (red = corrupted)"; tree.appendChild(lt);
-const eps=$("#eps"), couple=$("#couple");
-function upd(){ const e=+eps.value, c=couple.checked, mid=.72;
-  const half=Math.min(.5,e*(c?1.5:4.2)); const lo=Math.max(0,mid-half), hi=Math.min(1,mid+half);
-  $("#epsOut").textContent=e.toFixed(2);
-  $("#band").style.left=lo*100+"%"; $("#band").style.width=(hi-lo)*100+"%";
-  const v=$("#verdict"); v.className="verdict"+(lo<.5?" flag":"");
-  v.textContent=`Belief in the claim: ${Math.round(lo*100)}% to ${Math.round(hi*100)}%. `+(lo<.5?"Flag it for review.":"Keep it.");
-  circ.slice(3).forEach((cc,i)=>cc.setAttribute("fill", e>0 && (c? i===1 : true) ? "#D7263D" : "#5B6B82"));
-}
-eps.addEventListener("input",upd); couple.addEventListener("change",upd); upd();
-
-/* ---------- graph data ---------- */
-const nodes=[], byId={}, edges=[];
-P.forEach(p=>{ const n={id:p.id,kind:"p",label:p.t}; nodes.push(n); byId[p.id]=n; });
-P.forEach(p=>p.k.forEach(k=>{ const id="s:"+k;
-  if(!byId[id]){ const n={id,kind:"s",label:k}; nodes.push(n); byId[id]=n; }
-  edges.push([p.id,id]); }));
-nodes.forEach((n,i)=>n.i=i);
-const adj={}; nodes.forEach(n=>adj[n.id]=[]);
-edges.forEach((e,i)=>{ adj[e[0]].push(i); adj[e[1]].push(i); });
-
-let seed=7; const rnd=()=>((seed=(seed*16807)%2147483647)/2147483647);
-const pN=nodes.filter(n=>n.kind==="p");
-pN.forEach((n,i)=>{ const y=1-(i+.5)/pN.length*2, r=Math.sqrt(1-y*y), th=i*2.39996;
-  n.p=new THREE.Vector3(Math.cos(th)*r*5.4, y*4.2, Math.sin(th)*r*5.4); });
-nodes.filter(n=>n.kind==="s").forEach(n=>{
-  const c=new THREE.Vector3(); adj[n.id].forEach(ei=>c.add(byId[edges[ei][0]].p));
-  n.p=c.multiplyScalar(.55/adj[n.id].length).add(new THREE.Vector3(rnd()-.5,rnd()-.5,rnd()-.5)); });
-for(let it=0;it<260;it++){
-  const f=nodes.map(()=>new THREE.Vector3()), d=new THREE.Vector3();
-  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
-    d.copy(nodes[i].p).sub(nodes[j].p); const L=Math.max(d.length(),.3);
-    d.normalize().multiplyScalar(1.6/(L*L)); f[i].add(d); f[j].sub(d); }
-  edges.forEach(([a,b])=>{ const A=byId[a],B=byId[b]; d.copy(B.p).sub(A.p); const L=d.length();
-    d.normalize().multiplyScalar((L-2.7)*.06); f[A.i].add(d); f[B.i].sub(d); });
-  nodes.forEach((n,i)=>{ f[i].addScaledVector(n.p,-.012); n.p.add(f[i].clampLength(0,.4)); });
-}
-{ const c=new THREE.Vector3(); nodes.forEach(n=>c.add(n.p)); c.multiplyScalar(1/nodes.length); nodes.forEach(n=>n.p.sub(c)); }
-
-/* ---------- three ---------- */
-const canvas=$("#graph");
-let renderer=null;
-try{ renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true}); }
-catch(e){ document.documentElement.classList.add("nogl"); }
-
-if(renderer){
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-const scene=new THREE.Scene();
-const camera=new THREE.PerspectiveCamera(42,1,.1,100); camera.position.set(0,0,17);
-scene.add(new THREE.AmbientLight(0xffffff,1.6));
-const dl=new THREE.DirectionalLight(0xffffff,2.2); dl.position.set(4,6,8); scene.add(dl);
-const world=new THREE.Group(); scene.add(world);
-
-const INK=new THREE.Color("#16213E"), SLATE=new THREE.Color("#8796AC"), SAFF=new THREE.Color("#E8A317");
-const pGeo=new THREE.IcosahedronGeometry(.46,1), sGeo=new THREE.IcosahedronGeometry(.17,1);
-const meshes=[];
-nodes.forEach(n=>{
-  const mat=new THREE.MeshStandardMaterial({color:n.kind==="p"?INK:SLATE,flatShading:true,roughness:.55,metalness:.1,transparent:true});
-  const m=new THREE.Mesh(n.kind==="p"?pGeo:sGeo,mat); m.position.copy(n.p); m.userData.n=n;
-  n.mesh=m; n.op=1; n.target=1; world.add(m); meshes.push(m);
-});
-const ePos=new Float32Array(edges.length*6), eCol=new Float32Array(edges.length*8);
-edges.forEach(([a,b],i)=>{ byId[a].p.toArray(ePos,i*6); byId[b].p.toArray(ePos,i*6+3); });
-const eGeo=new THREE.BufferGeometry();
-eGeo.setAttribute("position",new THREE.BufferAttribute(ePos,3));
-eGeo.setAttribute("color",new THREE.BufferAttribute(eCol,4));
-world.add(new THREE.LineSegments(eGeo,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,depthWrite:false})));
-
-const MSG=reduce?40:150;
-const msgMesh=new THREE.InstancedMesh(new THREE.SphereGeometry(.065,10,8),new THREE.MeshBasicMaterial({color:SAFF}),MSG);
-world.add(msgMesh);
-const msgs=[]; for(let i=0;i<MSG;i++) msgs.push({e:Math.floor(rnd()*edges.length),dir:rnd()<.5,t:rnd(),sp:.25+rnd()*.35});
-const dummy=new THREE.Object3D();
-
-const labelBox=$("#labels");
-nodes.forEach(n=>{ const el=document.createElement("div"); el.className="nlabel"+(n.kind==="s"?" skill":""); el.textContent=n.label; labelBox.appendChild(el); n.el=el; });
-
-let focus=null, aim=null;
-function setFocus(set,a){ focus=set; aim=a||null; nodes.forEach(n=>n.target=!set||set.has(n.id)?1:.13); }
-G.focusSkill=k=>{ const id="s:"+k; if(!byId[id]) return setFocus(null); const s=new Set([id]); adj[id].forEach(ei=>s.add(edges[ei][0])); setFocus(s); };
-G.focusProject=id=>{ const s=new Set([id]); adj[id].forEach(ei=>s.add(edges[ei][1])); setFocus(s,byId[id]); };
-G.clear=()=>setFocus(null);
-G.projectsOnly=()=>setFocus(new Set(pN.map(n=>n.id)));
-
-let rotY=.4, rotX=.12, vY=reduce?0:.0018, dragging=false, sx=0, sy=0, moved=0, shiftX=0, shiftT=innerWidth>860?4.2:0, shiftY=0, shiftYT=innerWidth>860?0:3.2;
-const ray=new THREE.Raycaster(), mouse=new THREE.Vector2(), tip=$("#tip");
-let hover=null;
-function pick(e){
-  mouse.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1); ray.setFromCamera(mouse,camera);
-  const hits=ray.intersectObjects(meshes).filter(h=>h.object.userData.n.op>.5);
-  return hits[0]?hits[0].object.userData.n:null; }
-canvas.addEventListener("pointerdown",e=>{ dragging=true; aim=null; moved=0; sx=e.clientX; sy=e.clientY; canvas.setPointerCapture(e.pointerId); canvas.classList.add("dragging"); });
-canvas.addEventListener("pointermove",e=>{
-  if(dragging){ const dx=e.clientX-sx, dy=e.clientY-sy; moved+=Math.abs(dx)+Math.abs(dy);
-    vY=dx*.0045; rotY+=vY; rotX=Math.max(-1.4,Math.min(1.4,rotX+dy*.003)); sx=e.clientX; sy=e.clientY; }
-  if(e.pointerType==="mouse"){ hover=pick(e);
-    canvas.style.cursor=hover&&hover.kind==="p"?"pointer":"";
-    if(hover){ tip.textContent=hover.kind==="p"?"Open "+hover.label:"Show projects using "+hover.label;
-      tip.style.left=e.clientX+14+"px"; tip.style.top=e.clientY+14+"px"; tip.style.opacity=1; }
-    else tip.style.opacity=0; }
-});
-canvas.addEventListener("pointerup",e=>{
-  dragging=false; canvas.classList.remove("dragging");
-  if(!reduce&&Math.abs(vY)<.0018) vY=.0018;
-  if(moved<6){ const n=pick(e);
-    if(n&&n.kind==="p") openDet(n.id);
-    else if(n) selectChip(n.label);
-  }
-});
-canvas.addEventListener("pointerleave",()=>{tip.style.opacity=0; hover=null;});
-
-const sections=[...document.querySelectorAll("main section")];
-const io=new IntersectionObserver(es=>es.forEach(en=>{
-  if(!en.isIntersecting) return;
-  const f=en.target.dataset.focus, wide=innerWidth>860;
-  shiftT = en.target.id==="top" ? (wide?4.2:0) : (wide?-5:0); shiftYT = wide?0:(en.target.id==="top"?3.2:0);
-  document.querySelectorAll("nav.top a").forEach(a=>a.setAttribute("aria-current",String(a.getAttribute("href")==="#"+en.target.id)));
-  secFocus=f;
-  if(det.classList.contains("open")) return;
-  restore();
-}),{rootMargin:"-45% 0px -50% 0px",threshold:0});
-sections.forEach(s=>io.observe(s));
-
-function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h;
-  camera.position.z = w<860 ? 33 : (w<1200 ? 27 : 24); camera.updateProjectionMatrix(); }
-addEventListener("resize",resize); resize();
-
-const clock=new THREE.Clock(), v=new THREE.Vector3(), one=new THREE.Vector3();
-let intro=reduce?1:0;
-function frame(){
-  const dt=Math.min(clock.getDelta(),.05);
-  intro=Math.min(1,intro+dt*.5); const ease=1-Math.pow(1-intro,3);
-  if(aim&&!dragging){ const p=aim.p, ty=-Math.atan2(p.x,p.z), tx=Math.max(-1.4,Math.min(1.4,Math.atan2(p.y,Math.hypot(p.x,p.z))));
-    let d=ty-rotY; d=Math.atan2(Math.sin(d),Math.cos(d)); rotY+=d*.06; rotX+=(tx-rotX)*.06; vY=reduce?0:.0018; }
-  else if(!dragging){ rotY+=vY; if(!reduce) vY+=(Math.sign(vY||1)*.0018-vY)*.02; else vY*=.9; }
-  shiftX+=(shiftT-shiftX)*.05; shiftY+=(shiftYT-shiftY)*.05;
-  world.rotation.set(rotX,rotY+(1-ease)*1.6,0); world.position.x=shiftX; world.position.y=shiftY; world.scale.setScalar(.55+.45*ease);
-
-  nodes.forEach(n=>{ n.op+=(n.target-n.op)*.12; n.mesh.material.opacity=n.op*ease;
-    const s=hover===n?1.3:1; n.mesh.scale.lerp(one.set(s,s,s),.2); });
-  edges.forEach(([a,b],i)=>{ const o=Math.min(byId[a].op,byId[b].op)*.45*ease;
-    for(let k=0;k<2;k++){ const c=i*8+k*4; eCol[c]=.36;eCol[c+1]=.42;eCol[c+2]=.52;eCol[c+3]=o; } });
-  eGeo.attributes.color.needsUpdate=true;
-
-  msgs.forEach((m,i)=>{
-    m.t+=dt*m.sp*(reduce?.3:1);
-    if(m.t>=1){ const [a,b]=edges[m.e], at=m.dir?b:a, opts=adj[at];
-      m.e=opts[Math.floor(Math.random()*opts.length)]; m.dir=edges[m.e][0]===at; m.t=0; }
-    const [a,b]=edges[m.e], A=byId[a].p, B=byId[b].p;
-    v.copy(m.dir?A:B).lerp(m.dir?B:A,m.t);
-    const vis=Math.min(byId[a].op,byId[b].op)>.5?1:0;
-    dummy.position.copy(v); dummy.scale.setScalar(vis*ease*(.6+.7*Math.sin(m.t*Math.PI))); dummy.updateMatrix();
-    msgMesh.setMatrixAt(i,dummy.matrix);
-  });
-  msgMesh.instanceMatrix.needsUpdate=true;
-  renderer.render(scene,camera);
-
-  const W=innerWidth,H=innerHeight;
-  nodes.forEach(n=>{
-    n.mesh.getWorldPosition(v); v.project(camera);
-    const show = n.kind==="p" || hover===n || (focus&&focus.has(n.id)&&focus.size<12);
-    const x=(v.x*.5+.5)*W, y=(-v.y*.5+.5)*H+(n.kind==="p"?26:18);
-    n.el.style.opacity = v.z<1&&show ? (n.op*ease).toFixed(2) : 0;
-    n.el.style.transform=`translate(${x.toFixed(1)}px,${y.toFixed(1)}px) translate(-50%,-50%)`;
-  });
-  requestAnimationFrame(frame);
-}
-requestAnimationFrame(frame);
-}
-</script>
+<script type="module" src="/src/main.js"></script>
 </body>
 </html>
